@@ -96,7 +96,7 @@
       figBox.innerHTML = SVG;
       boca = figBox.querySelector('.vg-av__boca');
       pico = figBox.querySelector('.vg-av__pico');
-      if (nota3D) nota3D.textContent = 'Pantera 3D: en preparación';
+      if (nota3D) nota3D.textContent = 'Búho 3D: en preparación';
       return;
     }
     asegurarModelViewer(function (ok) {
@@ -105,14 +105,14 @@
       var mv = document.createElement('model-viewer');
       mv.className = 'vg-av__mv';
       mv.setAttribute('src', config3D.url);
-      mv.setAttribute('alt', 'Pantera 3D Vigía, asistente virtual');
+      mv.setAttribute('alt', 'Búho 3D Vigía, asistente virtual');
       mv.setAttribute('autoplay', '');
       if (!sinMovimiento) mv.setAttribute('camera-controls', '');
       mv.setAttribute('disable-tap', '');
       figBox.appendChild(mv);
       boca = null;
       pico = null;
-      if (nota3D) nota3D.textContent = 'Pantera 3D activa';
+      if (nota3D) nota3D.textContent = 'Búho 3D activo';
       animar3D(config3D.animReposo);
     });
   }
@@ -341,6 +341,7 @@
     btn.addEventListener('click', function () { ultimo ? pintarPasoClase() : saludar(); });
     info.appendChild(btn);
 
+    cab.appendChild(figBox);
     cab.appendChild(info);
 
     veredicto = el('p', 'vg-av__veredicto', ''); veredicto.hidden = true;
