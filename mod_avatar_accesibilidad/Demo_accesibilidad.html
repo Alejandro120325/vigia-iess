@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es-EC">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo clase interactiva · VIGÍA-IESS</title>
+  <link rel="stylesheet" href="css/accesibilidad.css">
+  <style>
+    body {
+      font-family: system-ui, "Segoe UI", Arial, sans-serif;
+      font-size: 1.125rem;
+      line-height: 1.6;
+      margin: 0 auto;
+      max-width: 48rem;
+      padding: 1rem;
+      background: #fdfaf3;
+      color: #1a1a1a;
+    }
+    .tarjeta {
+      border: .15rem solid #0b2e59;
+      border-radius: .8rem;
+      padding: 1rem 1.25rem;
+      margin-top: 1rem;
+      background: #fff;
+    }
+    .prueba {
+      min-height: 3rem;
+      margin: .5rem .5rem 0 0;
+      padding: .45rem 1rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      border: .15rem solid #0b2e59;
+      border-radius: .6rem;
+      background: #fff;
+      color: #0b2e59;
+      cursor: pointer;
+    }
+    .prueba:hover {
+      background: #ffc20e;
+      color: #000;
+    }
+    html.alto-contraste .tarjeta {
+      background: #000;
+      color: #fff;
+      border-color: #ffe600;
+    }
+  </style>
+</head>
+<body>
+  <main id="contenido-principal">
+    <h1>Demo: Clase interactiva, semáforo y preguntas</h1>
+
+    <div class="tarjeta">
+      <p>Pruebe los botones <strong>-</strong>, <strong>+</strong>, <strong>100%</strong> y <strong>Contraste</strong> de la barra superior, y use los controles de voz de abajo.</p>
+    </div>
+
+    <h2>Correo de ejemplo</h2>
+    <div class="tarjeta" id="correo-leido" data-correo>
+      <p><strong>De:</strong> soporte@servicio-falso.example</p>
+      <p><strong>Asunto:</strong> Su cuenta será bloqueada hoy.</p>
+      <p>Estimado afiliado, debe confirmar sus datos de inmediato haciendo clic en el enlace antes de las 17:00 para evitar el bloqueo de su cuenta.</p>
+    </div>
+
+    <h2>Controles de prueba</h2>
+    <button id="btn-sim-phishing" class="prueba" type="button">Simular: SÍ es phishing (3 fallos)</button>
+    <button id="btn-sim-seguro" class="prueba" type="button">Simular: NO es phishing</button>
+
+    <div id="avatar-asistente"></div>
+    <div id="cultura-consciente"></div>
+  </main>
+
+  <script src="control_zoom.js"></script>
+  <script src="lector_voz.js"></script>
+  <script src="avatar_asistente.js"></script>
+  <script src="cultura_consciente.js"></script>
+  <script>
+    (function () {
+      var casoPhishing = {
+        es_phishing: true,
+        indicios: [
+          {
+            nombre: 'Dominio falso del remitente',
+            explicacion: 'El correo viene de servicio-falso.example y no de un dominio oficial.',
+            pregunta: {
+              enunciado: 'El remitente es soporte@servicio-falso.example. ¿Qué conviene hacer?',
+              opciones: [
+                { t: 'Desconfiar: el dominio no corresponde a un canal oficial.', ok: true, f: 'Revisar la dirección completa del remitente ayuda a detectar suplantaciones.' },
+                { t: 'Confiar porque dice «soporte» al inicio.', ok: false, f: 'Cualquier persona puede escribir «soporte» en un correo falso.' }
+              ]
+            }
+          },
+          {
+            nombre: 'Urgencia para presionar',
+            explicacion: 'Dice que su cuenta será bloqueada hoy mismo para que actúe sin pensar.',
+            pregunta: {
+              enunciado: 'Cuando un mensaje exige actuar «de inmediato» o amenaza con bloquear su cuenta, ¿qué busca?',
+              opciones: [
+                { t: 'Hacer clic o dar datos rápido sin verificar.', ok: true, f: 'La prisa artificial es un truco clásico para que usted no revise con calma.' },
+                { t: 'Facilitarle el trámite sin riesgos.', ok: false, f: 'Las amenazas urgentes suelen ser una trampa para apurar su decisión.' }
+              ]
+            }
+          },
+          {
+            nombre: 'Pedido de confirmar datos por enlace',
+            explicacion: 'Le pide confirmar sus datos haciendo clic en un enlace del correo.',
+            pregunta: {
+              enunciado: 'Le piden confirmar sus datos desde un enlace del correo. ¿Cuál es la acción más segura?',
+              opciones: [
+                { t: 'No hacer clic y entrar por su cuenta o canal oficial conocido.', ok: true, f: 'Verificar por un canal oficial conocido protege sus claves y datos.' },
+                { t: 'Ingresar su clave en el enlace para salir de la duda.', ok: false, f: 'Nunca entregue claves ni datos sensibles desde enlaces de correos dudosos.' }
+              ]
+            }
+          }
+        ]
+      };
+
+      var casoSeguro = {
+        es_phishing: false,
+        indicios: []
+      };
+
+      document.getElementById('btn-sim-phishing').addEventListener('click', function () {
+        window.VigiaAvatar.explicar(casoPhishing);
+      });
+
+      document.getElementById('btn-sim-seguro').addEventListener('click', function () {
+        window.VigiaAvatar.explicar(casoSeguro);
+      });
+    })();
+  </script>
+</body>
+</html>
