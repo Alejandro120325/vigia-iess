@@ -1,0 +1,6 @@
+id;archivo;Phishing;indicios;escenario_interno;remitente
+P01;P01.eml;Sí;"I2;I3;I4;I6;I7;I10";reembolso_iess;notificaciones9894@iess-servicios-tu2.xyz
+P02;P02.eml;No;;iess_aportes;notificaciones@iess.gob.ec
+P03;P03.eml;Sí;I2;dificil_cordial;fernando.freire@iess.gob.ec
+P04;P04.eml;No;;svc_microsoft;account-security-noreply@accountprotection.microsoft.com
+P05;P05.eml;Sí;"I7;I9;I11";qr;servicio89761@portal-seguro.invalid
