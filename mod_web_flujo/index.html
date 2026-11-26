@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vigia IESS</title>
+    <link rel="stylesheet" href="css/estilos_intitucionales.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Vigia IESS</h1>
+      <p>Protege tu información. Identifica correos sospechosos.</p>
+    </header>
+    <nav>
+      <button onclick="mostrarVentana(1)">1. Subir Correo</button>
+      <button onclick="mostrarVentana(2)">2. Lectura Segura</button>
+      <button onclick="mostrarVentana(3)">3. Análisis en Vivo</button>
+      <button onclick="mostrarVentana(4)">4. Veredicto Final</button>
+    </nav>
+    <main>
+
+      <!-- Ventana 1: Subir Correo -->
+      <section id="ventana1" class="ventana-activa">
+        <h2>Subir Correo</h2>
+        <p>Selecciona el correo que deseas analizar.</p>
+
+        <input type="file" accept=".pdf,.eml">
+        <p>O pega aquí el contenido del correo:</p>
+        <textarea rows="6" cols="40"placeholder="Pega aquí el texto del correo..."></textarea>
+        <br>
+        <button onclick="validarCorreo()">Continuar a Lectura Segura → </button>
+      </section>
+
+      <!-- Ventana 2: Lectura Segura -->
+      <section id="ventana2" class="ventana-oculta">
+        <h2>Lectura Segura</h2>
+        <p>Revisa la información del correo seleccionado.</p>
+
+        <p><strong>Remitente:</strong> <span id="remitente">No identificado.</span></p>
+        <p><strong>Asunto:</strong> <span id="asunto">Sin asunto.</span></p>
+
+        <h3>Contenido del correo</h3>
+          <div id="contenidoCorreo">
+              El contenido del correo aparecerá aquí.
+          </div>
+        <button onclick="mostrarVentana(1)">← Volver</button>
+        <button onclick="mostrarVentana(3)">Continuar a Análisis en Vivo → </button>
+      </section>
+
+      <!-- Ventana 3: Análisis en Vivo -->
+      <section id="ventana3" class="ventana-oculta">
+        <h2>Análisis en Vivo</h2>
+        <p>Examinaremos el correo en busca de señales sospechosas.</p>
+
+        <div class="progreso-analisis">
+          <p id="estadoAnalisis">Esperando para iniciar el análisis...</p>
+          <progress id="barraProgreso" value="0" max="100"></progress>
+          <p id="porcentajeProgreso">0 %</p>
+        </div>
+
+        <h3>Comprobaciones de seguridad</h3>
+        <ul id="listaComprobaciones">
+          <li>Enlaces externos: pendientes</li>
+          <li>Mensajes de urgencia:pendientes</li>
+          <li>Solicitudes de contraseñas: pendientes</li>
+        </ul>
+        <button onclick="mostrarVentana(2)">← Volver </button>
+        <button onclick="analizarCorreo()">Iniciar Análisis</button>
+
+      </section>
+
+      <!-- Ventana 4: Veredicto Final -->
+      <section id="ventana4" class="ventana-oculta">
+        <h2>Veredicto Final</h2>
+        <p>Resultado de la revisión del correo:</p>
+        <h3 id="resultadoAnalisis">Analisis Pendiente</h3>
+
+        <h3>Indicadores encontrados</h3>
+
+        <ul id="indicadoresEncontrados">
+          <li>Aún no se ha realizado ningún análisis.</li>
+        </ul>
+
+        <h3>Recomendaciones de seguridad</h3>
+        <p id="recomendacionesAnalisis">Realiza el análisis para conocer las recomendaciones.</p>
+
+        <button onclick="mostrarVentana(3)">← Volver </button>
+        <button onclick="mostrarVentana(1)"> Inicio </button>
+
+      </section>
+    </main>
+
+    <footer>
+    <p>VigíaIESS - Educación y seguridad de la información</p>
+    <p>Herramienta educativa para identificar correos sospechosos.</p>
+</footer>
+    <script src="js/flujo_ventanas.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <script src="js/carga.js"></script>
+  </body>
+</html> 
