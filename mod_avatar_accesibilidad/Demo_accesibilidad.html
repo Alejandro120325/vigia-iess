@@ -3,115 +3,120 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vigia IESS · Demo de accesibilidad</title>
+    <title>Vigia IESS</title>
     <link rel="stylesheet" href="/assets/css/estilos_intitucionales.css" />
     <link rel="stylesheet" href="/accesibilidad/css/accesibilidad.css" />
-    <style>
-      .tarjeta {
-        border: .15rem solid #0b2e59;
-        border-radius: .8rem;
-        padding: 1rem 1.25rem;
-        margin-top: 1rem;
-        background: #fff;
-      }
-      .prueba {
-        min-height: 3rem;
-        margin: .5rem .5rem 0 0;
-        padding: .45rem 1rem;
-        font-size: 1.05rem;
-        font-weight: 700;
-        border: .15rem solid #0b2e59;
-        border-radius: .6rem;
-        background: #fff;
-        color: #0b2e59;
-        cursor: pointer;
-      }
-      .prueba:hover {
-        background: #ffc20e;
-        color: #000;
-      }
-      html.alto-contraste .tarjeta {
-        background: #000;
-        color: #fff;
-        border-color: #ffe600;
-      }
-      .demo-ayuda {
-        line-height: 1.6;
-      }
-    </style>
   </head>
   <body>
     <header>
       <h1>Vigia IESS</h1>
       <p>Protege tu información. Identifica correos sospechosos.</p>
-      <p>Demostración de accesibilidad y educación interactiva</p>
     </header>
 
-    <nav aria-label="Navegación de la demostración">
-      <button type="button" onclick="mostrarVentanaDemo(1)">1. Correo de ejemplo</button>
-      <button type="button" onclick="mostrarVentanaDemo(2)">2. Controles de prueba</button>
-      <button type="button" onclick="mostrarVentanaDemo(3)">3. Semáforo y preguntas</button>
-      <button type="button" onclick="window.location.href='/'">Inicio Vigia IESS</button>
+    <nav aria-label="Pasos de la demostración">
+      <button type="button" data-ir-paso="1" onclick="mostrarVentana(1)">1. Subir Correo</button>
+      <button type="button" data-ir-paso="2" onclick="mostrarVentana(2)">2. Lectura Segura</button>
+      <button type="button" data-ir-paso="3" onclick="mostrarVentana(3)">3. Análisis en Vivo</button>
+      <button type="button" data-ir-paso="4" onclick="mostrarVentana(4)">4. Veredicto Final</button>
     </nav>
 
     <main id="contenido-principal">
-      <section id="ventana1" class="ventana-activa">
-        <h2>Correo de ejemplo</h2>
-        <p class="demo-ayuda">Este mensaje es ficticio y se utiliza para practicar cómo reconocer señales de phishing.</p>
+      <!-- Ventana 1: Subir Correo -->
+      <section id="ventana1" class="paso ventana-activa">
+        <h2>Subir Correo</h2>
+        <p>Esta es una demostración educativa. Revisaremos un correo de ejemplo sin abrir enlaces ni entregar información personal.</p>
 
+        <h3>Correo de ejemplo</h3>
         <div class="tarjeta" id="correo-leido" data-correo>
           <p><strong>De:</strong> soporte@servicio-falso.example</p>
           <p><strong>Asunto:</strong> Su cuenta será bloqueada hoy.</p>
           <p>Estimado afiliado, debe confirmar sus datos de inmediato haciendo clic en el enlace antes de las 17:00 para evitar el bloqueo de su cuenta.</p>
         </div>
 
-        <button type="button" onclick="mostrarVentanaDemo(2)">Continuar a Controles de prueba →</button>
+        <button type="button" onclick="mostrarVentana(2)">Continuar a Lectura Segura →</button>
       </section>
 
-      <section id="ventana2" class="ventana-oculta">
-        <h2>Controles de prueba</h2>
-        <p>Pruebe los botones <strong>-</strong>, <strong>+</strong>, <strong>100%</strong> y <strong>Contraste</strong> de la barra superior. También puede usar los controles de voz de la parte inferior.</p>
-        <div class="tarjeta">
-          <p>Estos controles permiten cambiar el tamaño del texto, activar alto contraste y escuchar el contenido de la página.</p>
-          <p>Use el botón de lectura de pantalla para escuchar el correo de ejemplo o el contenido de esta demostración.</p>
+      <!-- Ventana 2: Lectura Segura -->
+      <section id="ventana2" class="paso ventana-oculta">
+        <h2>Lectura Segura</h2>
+        <p>Revisa la información del correo seleccionado. Los datos que aparecen aquí son ficticios y se usan únicamente para aprender a reconocer señales sospechosas.</p>
+
+        <p><strong>Remitente:</strong> <span id="remitente">soporte@servicio-falso.example</span></p>
+        <p><strong>Asunto:</strong> <span id="asunto">Su cuenta será bloqueada hoy.</span></p>
+
+        <h3>Contenido del correo</h3>
+        <div id="contenidoCorreo" class="tarjeta">
+          Estimado afiliado, debe confirmar sus datos de inmediato haciendo clic en el enlace antes de las 17:00 para evitar el bloqueo de su cuenta.
         </div>
-        <button type="button" onclick="mostrarVentanaDemo(1)">← Volver al correo</button>
-        <button type="button" onclick="mostrarVentanaDemo(3)">Continuar a Semáforo y preguntas →</button>
+
+        <p><strong>Consejo:</strong> No haga clic en enlaces de correos sospechosos. Entre al portal escribiendo usted mismo la dirección oficial conocida.</p>
+        <button type="button" onclick="mostrarVentana(1)">← Volver</button>
+        <button type="button" onclick="mostrarVentana(3)">Continuar a Análisis en Vivo →</button>
       </section>
 
-      <section id="ventana3" class="ventana-oculta">
-        <h2>Semáforo y preguntas</h2>
-        <p>Seleccione una opción para que el asistente explique las señales detectadas y presente preguntas educativas.</p>
-        <button id="btn-sim-phishing" class="prueba" type="button">Simular: SÍ es phishing (3 fallos)</button>
-        <button id="btn-sim-seguro" class="prueba" type="button">Simular: NO es phishing</button>
+      <!-- Ventana 3: Análisis en Vivo -->
+      <section id="ventana3" class="paso ventana-oculta">
+        <h2>Análisis en Vivo</h2>
+        <p>Examinaremos el correo de ejemplo en busca de señales sospechosas.</p>
+
+        <div class="progreso-analisis">
+          <p id="estadoAnalisis">Demostración educativa lista para iniciar.</p>
+          <progress id="barraProgreso" value="0" max="100"></progress>
+          <p id="porcentajeProgreso">0 %</p>
+        </div>
+
+        <h3>Comprobaciones de seguridad</h3>
+        <ul id="listaComprobaciones">
+          <li>Dominio del remitente: revisar</li>
+          <li>Mensajes de urgencia: revisar</li>
+          <li>Solicitud de datos mediante enlace: revisar</li>
+        </ul>
+
+        <h3>Controles de prueba</h3>
+        <p>Seleccione una opción para que Vigía explique las señales del correo y le haga preguntas cortas.</p>
+        <button id="btn-sim-phishing" type="button">Simular: SÍ es phishing (3 fallos)</button>
+        <button id="btn-sim-seguro" type="button">Simular: NO es phishing</button>
+
+        <button type="button" onclick="mostrarVentana(2)">← Volver</button>
+        <button type="button" onclick="mostrarVentana(4)">Continuar a Veredicto Final →</button>
+      </section>
+
+      <!-- Ventana 4: Veredicto Final -->
+      <section id="ventana4" class="paso ventana-oculta">
+        <h2>Veredicto Final</h2>
+        <p>Resultado de la revisión educativa del correo de ejemplo:</p>
+        <h3 id="resultadoAnalisis">Posible phishing: correo sospechoso</h3>
+
+        <h3>Indicadores encontrados</h3>
+        <ul id="indicadoresEncontrados">
+          <li>Dominio del remitente que no corresponde a un canal oficial.</li>
+          <li>Mensaje de urgencia que presiona para actuar rápido.</li>
+          <li>Solicitud de confirmar datos mediante un enlace.</li>
+        </ul>
+
+        <h3>Recomendaciones de seguridad</h3>
+        <p id="recomendacionesAnalisis">No haga clic, no entregue claves ni datos personales y verifique cualquier solicitud por un canal oficial conocido.</p>
 
         <div id="avatar-asistente"></div>
         <div id="cultura-consciente"></div>
 
-        <button type="button" onclick="mostrarVentanaDemo(2)">← Volver a Controles</button>
+        <button type="button" onclick="mostrarVentana(3)">← Volver</button>
+        <button type="button" onclick="mostrarVentana(1)">Inicio</button>
       </section>
     </main>
 
     <footer>
       <p>VigíaIESS - Educación y seguridad de la información</p>
       <p>Herramienta educativa para identificar correos sospechosos.</p>
-      <p><a href="/">Volver a la aplicación principal</a></p>
+      <p><a href="/accesibilidad/Demo_accesibilidad.html">Demostración de accesibilidad</a></p>
     </footer>
 
+    <script src="/assets/js/flujo_ventanas.js"></script>
+    <script src="/accesibilidad/control_zoom.js"></script>
+    <script src="/accesibilidad/lector_voz.js"></script>
+    <script src="/accesibilidad/avatar_asistente.js"></script>
+    <script src="/accesibilidad/cultura_consciente.js"></script>
     <script>
-      function mostrarVentanaDemo(numero) {
-        for (var i = 1; i <= 3; i++) {
-          var ventana = document.getElementById('ventana' + i);
-          if (!ventana) continue;
-          ventana.className = i === numero ? 'ventana-activa' : 'ventana-oculta';
-        }
-        var botones = document.querySelectorAll('nav button');
-        botones.forEach(function (boton, indice) {
-          boton.classList.toggle('paso-activo', indice + 1 === numero);
-        });
-        window.scrollTo(0, 0);
-      }
-
       (function () {
         var casoPhishing = {
           es_phishing: true,
@@ -166,9 +171,5 @@
         });
       })();
     </script>
-    <script src="/accesibilidad/control_zoom.js"></script>
-    <script src="/accesibilidad/lector_voz.js"></script>
-    <script src="/accesibilidad/avatar_asistente.js"></script>
-    <script src="/accesibilidad/cultura_consciente.js"></script>
   </body>
 </html>
