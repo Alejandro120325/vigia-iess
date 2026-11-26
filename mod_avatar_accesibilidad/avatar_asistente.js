@@ -161,13 +161,13 @@
 
   /* ---------- Semáforo progresivo ---------- */
   function actualizarSemaforo() {
-    var nivel = 'verde', etiqueta = 'Semáforo en VERDE: 0 fallos confirmados aún.';
+    var nivel = 'verde', etiqueta = 'Nivel de riesgo bajo: todavía no hay fallos confirmados.';
     if (erroresDetectados >= 3 || (totalFallos > 0 && erroresDetectados >= totalFallos)) {
       nivel = 'rojo';
-      etiqueta = 'Semáforo en ROJO: ' + erroresDetectados + ' de ' + Math.max(totalFallos, erroresDetectados) + ' fallos detectados. Alto riesgo de phishing.';
+      etiqueta = 'Nivel de riesgo alto: ' + erroresDetectados + ' de ' + Math.max(totalFallos, erroresDetectados) + ' fallos detectados. Alto riesgo de phishing.';
     } else if (erroresDetectados >= 1) {
       nivel = 'amarillo';
-      etiqueta = 'Semáforo en AMARILLO: ' + erroresDetectados + ' fallo(s) detectado(s). Precaución.';
+      etiqueta = 'Nivel de riesgo moderado: ' + erroresDetectados + ' fallo(s) detectado(s). Precaución.';
     }
     
     
@@ -347,7 +347,7 @@
     veredicto.setAttribute('role', 'status');
 
     var sem = el('div', 'vg-av__semaforo');
-    semTxt = el('div', 'vg-sem__txt', 'Semáforo en VERDE: 0 fallos confirmados aún.');
+    semTxt = el('div', 'vg-sem__txt', 'Nivel de riesgo bajo: todavía no hay fallos confirmados.');
     semTxt.setAttribute('role', 'status'); semTxt.setAttribute('aria-live', 'polite');
     sem.appendChild(semTxt);
 
@@ -355,7 +355,7 @@
     claseBox.setAttribute('role', 'region');
     claseBox.setAttribute('aria-label', 'Clase interactiva sobre phishing');
     claseBox.appendChild(el('h3', '', 'Clase interactiva de seguridad'));
-    claseBox.appendChild(el('p', '', 'Pulse «Simular: SÍ es phishing» para comenzar la clase con explicación de phishing, impacto, semáforo y preguntas cortas.'));
+    claseBox.appendChild(el('p', '', 'Pulse «Simular: SÍ es phishing» para comenzar la clase con explicación de phishing, impacto y preguntas cortas.'));
 
     sub = el('div', 'vg-av__sub', 'Hola, soy ' + NOMBRE + '. Aquí verá los subtítulos en letra grande.');
     sub.setAttribute('aria-live', 'off');
