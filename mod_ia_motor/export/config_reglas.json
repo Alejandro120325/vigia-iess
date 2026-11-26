@@ -1,0 +1,182 @@
+{
+  "version": 2,
+  "regla_negocio": "Phishing si se detecta al menos un indicio I1-I11; sin indicios, no phishing.",
+  "listas_blancas": [
+    "iess.gob.ec",
+    "biess.fin.ec",
+    "gob.ec",
+    "sri.gob.ec",
+    "registrocivil.gob.ec",
+    "microsoft.com",
+    "google.com",
+    "zoom.us"
+  ],
+  "listas_negras": {
+    "dominios_acortadores": [
+      "bit.ly",
+      "tinyurl.com",
+      "t.co",
+      "cutt.ly",
+      "t.ly",
+      "cshort.jp",
+      "goo.gl",
+      "ow.ly",
+      "is.gd"
+    ],
+    "dominios_correo_gratuito": [
+      "gmail.com",
+      "hotmail.com",
+      "outlook.com",
+      "yahoo.com",
+      "yahoo.es",
+      "icloud.com",
+      "live.com",
+      "proton.me"
+    ],
+    "extensiones_sospechosas": [
+      ".zip",
+      ".rar",
+      ".7z",
+      ".exe",
+      ".apk",
+      ".html",
+      ".htm",
+      ".js",
+      ".docm",
+      ".xlsm",
+      ".scr",
+      ".bat",
+      ".cmd",
+      ".vbs",
+      ".ps1",
+      ".jar",
+      ".msi",
+      ".iso"
+    ]
+  },
+  "remitentes_iess_oficiales": [
+    "iess.gob.ec"
+  ],
+  "patrones": {
+    "I1": [
+      "\\b(?:act[uú]e|actuar|responda|confirme|valide|regularice)\\s+(?:hoy|ahora|de inmediato|inmediatamente)\\b",
+      "\\b(?:[uú]ltimo aviso|plazo m[aá]ximo|en las pr[oó]ximas?\\s+\\d+\\s*(?:horas?|minutos?)|antes de hoy)\\b",
+      "\\b(?:urgente|con urgencia|acci[oó]n inmediata)\\b"
+    ],
+    "I3": [
+      "\\b(?:ingrese|env[ií]e|comparta|confirme|actualice|proporcione|escriba)\\b[^.!?\\n]{0,55}\\b(?:contrase[nñ]a|clave|token|tarjeta|CVV|PIN)\\b",
+      "\\b(?:contrase[nñ]a|clave|token|tarjeta|CVV|PIN)\\b[^.!?\\n]{0,55}\\b(?:ingrese|env[ií]e|comparta|confirme|actualice|proporcione|escriba)\\b",
+      "\\b(?:ingrese|env[ií]e|comparta|confirme|proporcione|escriba)\\b[^.!?\\n]{0,45}\\bc[oó]digo\\s+(?:de\\s+(?:verificaci[oó]n|seguridad|acceso)|SMS|temporal)\\b",
+      "\\b(?:c[oó]digo\\s+(?:de\\s+(?:verificaci[oó]n|seguridad|acceso)|SMS|temporal))\\b[^.!?\\n]{0,45}\\b(?:ingrese|env[ií]e|comparta|confirme|proporcione|escriba)\\b",
+      "\\b(?:usuario\\s+y\\s+contrase[nñ]a|credenciales)\\b"
+    ],
+    "I5": [
+      "\\b[\\w.-]+\\.(?:zip|rar|7z|exe|apk|html?|js|docm|xlsm|scr|bat|cmd|vbs|ps1|jar|msi|iso)\\b",
+      "\\b(?:instale|descargue|instalar|descargar)\\b.{0,60}\\b(?:aplicaci[oó]n|app|programa|archivo)\\b",
+      "\\b(?:aplicaci[oó]n|app|programa)\\b.{0,60}\\b(?:instale|descargue|instalar|descargar)\\b"
+    ],
+    "I6": [
+      "\\b(?:premio|bono|reembolso|devoluci[oó]n|saldo a su favor|pago en exceso)\\b",
+      "\\b(?:ha ganado|gan[oó]|reciba)\\b.{0,50}\\b(?:premio|bono|reembolso|dinero)\\b"
+    ],
+    "I8": [
+      "\\b(?:suspensi[oó]n|suspend(?:er|ida)|bloqueo|bloquear|multa|embargo|p[eé]rdida de beneficios?)\\b",
+      "\\b(?:ser[aá] suspendid[oa]|se bloquear[aá]|perder[aá] sus beneficios)\\b"
+    ],
+    "I9": [
+      "\\b(?:env[ií]e|ingrese|proporcione|adjunte|cargue|confirme|actualice)\\b.{0,90}\\b(?:c[eé]dula|identificaci[oó]n|fecha de nacimiento|documento|selfie|datos personales|nombres completos|n[uú]mero de celular)\\b",
+      "\\b(?:c[eé]dula|fecha de nacimiento|selfie con documento|datos personales|nombres completos)\\b"
+    ],
+    "I10": [
+      "\\b(?:transfiera|deposite|pague|realice el pago|efect[uú]e el pago|env[ií]e dinero)\\b",
+      "\\b(?:dep[oó]sito|transferencia|tasa de activaci[oó]n|multa|criptomonedas?|bitcoin)\\b"
+    ]
+  },
+  "regex": {
+    "url": "https?://[^\\s<>\\\"'`]+",
+    "enlace_html": "<a\\b[^>]*href\\s*=\\s*[\"']([^\"']+)[\"'][^>]*>(.*?)</a\\s*>",
+    "banderas": "i"
+  },
+  "indicios": [
+    {
+      "codigo": "I1",
+      "nombre": "Urgencia artificial",
+      "descripcion": "El correo utiliza plazos cortos o presión para provocar una acción inmediata."
+    },
+    {
+      "codigo": "I2",
+      "nombre": "Enlace a dominio no oficial",
+      "descripcion": "El mensaje incluye un enlace cuyo dominio no está en la lista permitida."
+    },
+    {
+      "codigo": "I3",
+      "nombre": "Solicitud de credenciales, claves, códigos o tarjeta",
+      "descripcion": "El mensaje solicita contraseñas, claves, códigos, tokens o datos de tarjeta."
+    },
+    {
+      "codigo": "I4",
+      "nombre": "Enlace acortado u oculto",
+      "descripcion": "El enlace utiliza un acortador o muestra un destino distinto al enlace real."
+    },
+    {
+      "codigo": "I5",
+      "nombre": "Adjunto o instalación sospechosa",
+      "descripcion": "El mensaje incluye un adjunto peligroso o solicita instalar/descargar software."
+    },
+    {
+      "codigo": "I6",
+      "nombre": "Premio, bono o reembolso inesperado",
+      "descripcion": "El mensaje ofrece un premio, bono, devolución o reembolso inesperado."
+    },
+    {
+      "codigo": "I7",
+      "nombre": "Remitente no oficial",
+      "descripcion": "El remitente no pertenece a un dominio reconocido o el Reply-To no coincide."
+    },
+    {
+      "codigo": "I8",
+      "nombre": "Amenaza o pérdida de beneficio",
+      "descripcion": "El mensaje amenaza con suspensión, bloqueo, multa o pérdida de beneficios."
+    },
+    {
+      "codigo": "I9",
+      "nombre": "Solicitud de datos personales o documentos",
+      "descripcion": "El mensaje solicita cédula, documentos u otros datos personales."
+    },
+    {
+      "codigo": "I10",
+      "nombre": "Solicitud de pago o transferencia",
+      "descripcion": "El mensaje solicita pagos, depósitos, transferencias o criptomonedas."
+    },
+    {
+      "codigo": "I11",
+      "nombre": "Código QR hacia sitio no verificable",
+      "descripcion": "El mensaje pide escanear un QR cuyo destino no ha sido verificado."
+    }
+  ],
+  "consejos": {
+    "I1": "No actúe por presión. Verifique el aviso entrando por su cuenta al portal oficial.",
+    "I2": "No abra el enlace. Escriba usted mismo www.iess.gob.ec en el navegador.",
+    "I3": "Nunca comparta claves, contraseñas ni códigos de verificación por correo.",
+    "I4": "No utilice enlaces acortados o disfrazados. Verifique el destino por un canal oficial.",
+    "I5": "No abra ni ejecute el adjunto. Confirme el mensaje por un canal oficial.",
+    "I6": "Desconfíe de beneficios inesperados que exigen datos, pagos o validaciones externas.",
+    "I7": "Compruebe el dominio completo del remitente y no responda a direcciones sospechosas.",
+    "I8": "No permita que una amenaza le haga actuar rápido. Consulte directamente al IESS.",
+    "I9": "No envíe su cédula ni datos personales mediante enlaces recibidos por correo.",
+    "I10": "No transfiera ni deposite dinero para desbloquear supuestos beneficios.",
+    "I11": "No escanee el QR. Su destino no se ha verificado; consulte por un canal oficial."
+  },
+  "canales_oficiales": {
+    "portal": "www.iess.gob.ec",
+    "app_afiliado": "app.iess.gob.ec",
+    "denuncias": [
+      "denuncias.iess.gob.ec",
+      "gestiondenuncias@iess.gob.ec"
+    ],
+    "whatsapp": "+593 9 62532338",
+    "atencion_telefonica": "02 3945666",
+    "atencion_correo": "atencionalusuario@iess.gob.ec",
+    "seguridad_informacion": "seguridad.informacion@iess.gob.ec"
+  }
+}

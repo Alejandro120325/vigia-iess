@@ -1,0 +1,38 @@
+# Entornos virtuales y compilados de Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+
+# Configuraciones locales de IDEs (PyCharm / VS Code)
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Variables de entorno, llaves y certificados locales
+.env
+.env.*
+*.pem
+*.key
+*.crt
+
+# Archivos sensibles, temporales y correos subidos por usuarios
+*.log
+temp/
+tmp/
+uploads/
+*.pdf
+*.eml
+!data/practica/P01.eml
+!data/practica/P02.eml
+!data/practica/P03.eml
+!data/practica/P04.eml
+!data/practica/P05.eml
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
