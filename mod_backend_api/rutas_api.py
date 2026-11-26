@@ -1,6 +1,6 @@
 """
-Rutas REST de mod_backend_api (Responsable: Alejo).
-Conecta la interfaz web (Jesly + Jos) y una futura app móvil con el motor de IA (Alex).
+Rutas REST de mod_backend_api (Responsable: Alejandro Ojeda.
+Conecta la interfaz web y una futura app móvil con el motor de IA.
 """
 import os
 from flask import Blueprint, jsonify, request
@@ -19,8 +19,7 @@ except ImportError:
 
 def _evaluacion_respaldo_si_falta_alex(datos_correo: dict) -> dict:
     """
-    Adaptador de seguridad para que Alejo pueda probar su API de punta a punta
-    incluso antes de que Alex haga merge de mod_ia_motor.
+    Adaptador de seguridad para que se pueda probar la API.
     """
     enlaces_falsos = [e for e in datos_correo.get("enlaces", []) if not e["es_oficial"]]
     indicios = []
@@ -48,7 +47,7 @@ def _evaluacion_respaldo_si_falta_alex(datos_correo: dict) -> dict:
 
 @backend_bp.route("/api/salud", methods=["GET"])
 def api_salud():
-    """Verifica el estado del servidor local y la conexión con el motor de Alex."""
+    """Verifica el estado del servidor local y la conexión con el motor."""
     return jsonify({
         "ok": True,
         "modulo": "mod_backend_api",
@@ -59,7 +58,7 @@ def api_salud():
 
 @backend_bp.route("/api/canales-oficiales", methods=["GET"])
 def api_canales_oficiales():
-    """Devuelve los canales oficiales del IESS para mostrarlos en la web o app móvil."""
+    """Devuelve los canales oficiales del IESS para mostrarlos en la web o la futura app móvil."""
     return jsonify({
         "ok": True,
         "canales": CANALES_OFICIALES_IESS
@@ -108,9 +107,9 @@ def api_paso1_leer():
 def api_paso2_analizar():
     """
     Ventana 2 -> Ventana 3 & 4:
-    Envía los datos aislados del correo al motor de IA de Alex (mod_ia_motor)
+    Envía los datos aislados del correo al motor de IA
     y retorna el dictamen ('Sí es phishing' / 'No es phishing'), los indicios I1-I11
-    y el guion listo para el Avatar de Jos.
+    y el guion listo para el Avatar.
     """
     payload = request.get_json(silent=True) or {}
     datos_correo = payload.get("correo")
@@ -131,8 +130,7 @@ def api_paso2_analizar():
 @backend_bp.route("/api/auditoria-practica", methods=["GET"])
 def api_auditoria_practica():
     """
-    Ejecuta automáticamente los 5 correos .eml de práctica (P01..P05) para
-    demostrar evidencia ante el jurado o validar cambios del equipo.
+    Ejecuta automáticamente los 5 correos .eml de práctica (P01...P05).
     """
     carpeta_practica = os.path.join("data", "practica")
     if not os.path.exists(carpeta_practica):
