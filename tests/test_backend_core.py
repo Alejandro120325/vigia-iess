@@ -111,7 +111,7 @@ class TestAplicacionIntegrada(unittest.TestCase):
     def test_interfaz_y_recursos_se_publican(self):
         pagina = self.cliente.get("/")
         self.assertEqual(pagina.status_code, 200)
-        self.assertIn(b"VigÃ­a IESS", pagina.data)
+        self.assertIn("Vigía IESS".encode("utf-8"), pagina.data)
         self.assertEqual(self.cliente.get("/assets/js/cliente_api.js").status_code, 200)
         self.assertEqual(self.cliente.get("/accesibilidad/avatar_asistente.js").status_code, 200)
 
