@@ -57,7 +57,7 @@
       ponerTexto('fechaCorreo', correo.fecha, 'No especificada');
       ponerTexto('origenCorreo', correo.tipo_origen, 'No especificado');
 
-      const cuerpo = document.getElementById('contenidoCorreoSeguro');
+      const cuerpo = document.getElementById('contenidoCorreoSeguro') || document.getElementById('contenidoCorreo');
       cuerpo.textContent = correo.cuerpo_neutralizado || correo.cuerpo || 'El mensaje no contiene texto legible.';
       ponerTexto('huellaCorreo', correo.huella_sha256, 'No disponible');
 
