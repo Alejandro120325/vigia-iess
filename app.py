@@ -6,6 +6,7 @@ VigíaIESS - Servidor local (Reto 1: Seguridad inteligente, cultura consciente)
 - Jos:   mod_avatar_accesibilidad
 - Jesly: mod_web_flujo
 """
+
 import os
 from flask import Flask, render_template
 from mod_backend_api.rutas_api import backend_bp
@@ -48,4 +49,4 @@ if __name__ == "__main__":
     print("  VigíaIESS • Servidor Local Activo en http://localhost:5000")
     print("  Ejecución 100% privada sin envío de correos a terceros")
     print("==================================================================")
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=False)

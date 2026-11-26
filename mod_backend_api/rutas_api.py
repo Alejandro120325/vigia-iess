@@ -1,168 +1,229 @@
 """
-Rutas REST de mod_backend_api (Responsable: Alejandro Ojeda.
+Rutas REST de mod_backend_api / Responsable: Alejandro Ojeda.
 Conecta la interfaz web y una futura app móvil con el motor de IA.
 """
-import os
-from flask import Blueprint, jsonify, request
+
+from __future__ import annotations
+
+import hashlib
+import hmac
+import json
+from pathlib import Path
+from typing import Any
+
+from flask import Blueprint, current_app, jsonify, request
+from werkzeug.exceptions import RequestEntityTooLarge
+
 from mod_backend_api.config_canales import CANALES_OFICIALES_IESS
-from mod_backend_api.extractor_seguro import extraer_correo_seguro
+from mod_backend_api.extractor_seguro import ErrorExtraccion, extraer_correo_seguro
 
 backend_bp = Blueprint("backend_bp", __name__)
+ROOT_DIR = Path(__file__).resolve().parents[1]
+PRACTICA_DIR = ROOT_DIR / "data" / "practica"
 
-# Integración desacoplada con el módulo de Alex (mod_ia_motor)
 try:
-    from mod_ia_motor.evaluador import analizar_correo_ia
-    MOTOR_ALEX_DISPONIBLE = True
-except ImportError:
-    MOTOR_ALEX_DISPONIBLE = False
+    from mod_ia_motor.evaluador import analizar_correo_ia, estado_motor_ia
+    from mod_ia_motor.reglas_indicios import detectar_indicios
+    MOTOR_MODULO_DISPONIBLE = True
+    MOTOR_ERROR_IMPORTACION = None
+except Exception as exc:  # La API sigue disponible para informar el problema.
+    analizar_correo_ia = None
+    detectar_indicios = None
+    estado_motor_ia = None
+    MOTOR_MODULO_DISPONIBLE = False
+    MOTOR_ERROR_IMPORTACION = f"{type(exc).__name__}: {exc}"
 
 
-def _evaluacion_respaldo_si_falta_alex(datos_correo: dict) -> dict:
-    """
-    Adaptador de seguridad para que se pueda probar la API.
-    """
-    enlaces_falsos = [e for e in datos_correo.get("enlaces", []) if not e["es_oficial"]]
-    indicios = []
-    if enlaces_falsos:
-        indicios.append({
-            "codigo": "I2",
-            "nombre": "Enlace a dominio no oficial",
-            "explicacion": f"Se detectaron enlaces externos: {', '.join(e['dominio'] for e in enlaces_falsos)}.",
-            "consejo": "No haga clic. Ingrese únicamente a www.iess.gob.ec."
-        })
-    es_phishing = len(indicios) > 0
+def _json_canonico(datos: dict[str, Any]) -> bytes:
+    copia = {key: value for key, value in datos.items() if key != "token_integridad"}
+    return json.dumps(copia, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+
+def _crear_firma(datos: dict[str, Any]) -> str:
+    secreto = current_app.config["INTEGRITY_SECRET"]
+    if isinstance(secreto, str):
+        secreto = secreto.encode("utf-8")
+    return hmac.new(secreto, _json_canonico(datos), hashlib.sha256).hexdigest()
+
+
+def _firmar_correo(datos: dict[str, Any]) -> dict[str, Any]:
+    datos["token_integridad"] = _crear_firma(datos)
+    return datos
+
+
+def _verificar_firma(datos: dict[str, Any]) -> bool:
+    token = datos.get("token_integridad")
+    if not isinstance(token, str) or not token:
+        return False
+    esperado = _crear_firma(datos)
+    return hmac.compare_digest(token, esperado)
+
+
+def _error_mensaje(mensaje: str, status: int):
+    return jsonify({"ok": False, "error": mensaje}), status
+
+
+def _evaluacion_solo_reglas(datos_correo: dict[str, Any]) -> dict[str, Any]:
+    """Respaldo explícito: nunca inventa probabilidades ML."""
+    if detectar_indicios is None:
+        return {
+            "veredicto": "No disponible",
+            "es_phishing": None,
+            "total_indicios": 0,
+            "codigos_detectados": [],
+            "indicios": [],
+            "probabilidad_ml": None,
+            "guion_avatar": "No fue posible cargar el motor de reglas. Revise la instalación.",
+            "error_motor": MOTOR_ERROR_IMPORTACION,
+        }
+    indicios = detectar_indicios(datos_correo)
+    salida = [{
+        "codigo": item["codigo"],
+        "nombre": item["nombre"],
+        "explicacion": item.get("evidencia", "Indicio detectado por regla local."),
+        "consejo": "No abra enlaces ni adjuntos. Verifique por los canales oficiales del IESS.",
+        "evidencia": item.get("evidencia", ""),
+        "origen": "regla_deterministica",
+    } for item in indicios]
+    es_phishing = bool(salida)
     return {
         "veredicto": "Sí es phishing" if es_phishing else "No es phishing",
         "es_phishing": es_phishing,
-        "total_indicios": len(indicios),
-        "codigos_detectados": [i["codigo"] for i in indicios],
-        "indicios": indicios,
-        "probabilidad_ml": 95.0 if es_phishing else 5.0,
+        "total_indicios": len(salida),
+        "codigos_detectados": [item["codigo"] for item in salida],
+        "indicios": salida,
+        "probabilidad_ml": None,
         "guion_avatar": (
-            "Resultado preliminar del respaldo local. Conecte mod_ia_motor de Alex para evaluar los 11 indicios completos."
+            "El mensaje presenta indicios de phishing. No abra enlaces ni adjuntos y consulte los canales oficiales."
+            if es_phishing else
+            "No se detectaron indicios determinísticos. Esto no garantiza que el correo sea legítimo."
         ),
-        "canales_oficiales": CANALES_OFICIALES_IESS
+        "aviso": "El adaptador completo de Alex no pudo cargarse; se ejecutaron únicamente las reglas disponibles.",
     }
 
 
-@backend_bp.route("/api/salud", methods=["GET"])
+@backend_bp.get("/api/salud")
 def api_salud():
-    """Verifica el estado del servidor local y la conexión con el motor."""
+    estado = estado_motor_ia() if MOTOR_MODULO_DISPONIBLE and estado_motor_ia else {
+        "reglas_deterministicas": detectar_indicios is not None,
+        "modelo_ml_disponible": False,
+        "error_importacion": MOTOR_ERROR_IMPORTACION,
+    }
     return jsonify({
         "ok": True,
+        "servicio": "Vigía IESS API",
         "modulo": "mod_backend_api",
-        "motor_ia_conectado": MOTOR_ALEX_DISPONIBLE,
-        "modo_ejecucion": "100% Local (Sin envío de datos externos)"
+        "version_backend": "2.0.0",
+        "motor_ia_conectado": MOTOR_MODULO_DISPONIBLE,
+        "motor": estado,
+        "modo_ejecucion": "Local; no se visitan enlaces ni se envían correos a terceros.",
+        "limite_archivo_bytes": current_app.config.get("MAX_CONTENT_LENGTH"),
     })
 
 
-@backend_bp.route("/api/canales-oficiales", methods=["GET"])
+@backend_bp.get("/api/canales-oficiales")
 def api_canales_oficiales():
-    """Devuelve los canales oficiales del IESS para mostrarlos en la web o la futura app móvil."""
-    return jsonify({
-        "ok": True,
-        "canales": CANALES_OFICIALES_IESS
-    })
+    return jsonify({"ok": True, "canales": CANALES_OFICIALES_IESS})
 
 
-@backend_bp.route("/api/paso1-leer", methods=["POST"])
+@backend_bp.post("/api/paso1-leer")
 def api_paso1_leer():
-    """
-    Ventana 1 -> Ventana 2:
-    Recibe un PDF de Gmail, un archivo .eml o texto pegado y devuelve sus partes
-    aisladas y neutralizadas.
-    """
     archivo = request.files.get("archivo")
     texto_pegado = request.form.get("texto_pegado", "")
-
     if archivo and archivo.filename:
         nombre = archivo.filename
         if not nombre.lower().endswith((".pdf", ".eml")):
-            return jsonify({
-                "ok": False,
-                "error": "Formato no permitido. Suba únicamente un archivo PDF de Gmail o un correo .eml."
-            }), 400
-
-        contenido = archivo.read()
-        if not contenido:
-            return jsonify({"ok": False, "error": "El archivo seleccionado está vacío."}), 400
-
-        datos = extraer_correo_seguro(
-            archivo_bytes=contenido,
-            nombre_archivo=nombre,
-            texto_pegado=texto_pegado
-        )
+            return _error_mensaje("Formato no permitido. Suba únicamente PDF de Gmail o archivo .eml.", 400)
+        contenido = archivo.stream.read(current_app.config["MAX_CONTENT_LENGTH"] + 1)
+        if len(contenido) > current_app.config["MAX_CONTENT_LENGTH"]:
+            return _error_mensaje("El archivo supera el límite de 10 MB.", 413)
+        try:
+            correo = extraer_correo_seguro(
+                archivo_bytes=contenido,
+                nombre_archivo=nombre,
+            )
+        except ErrorExtraccion as exc:
+            return _error_mensaje(str(exc), 422)
     elif texto_pegado.strip():
-        datos = extraer_correo_seguro(texto_pegado=texto_pegado)
+        try:
+            correo = extraer_correo_seguro(texto_pegado=texto_pegado)
+        except ErrorExtraccion as exc:
+            return _error_mensaje(str(exc), 422)
     else:
-        return jsonify({
-            "ok": False,
-            "error": "Por favor suba un archivo PDF de Gmail, un archivo .eml o pegue el texto del mensaje."
-        }), 400
+        return _error_mensaje("Suba un PDF, un correo .eml o pegue el texto del mensaje.", 400)
 
-    return jsonify({"ok": True, "correo": datos})
+    _firmar_correo(correo)
+    return jsonify({"ok": True, "correo": correo})
 
 
-@backend_bp.route("/api/paso2-analizar", methods=["POST"])
+@backend_bp.post("/api/paso2-analizar")
 def api_paso2_analizar():
-    """
-    Ventana 2 -> Ventana 3 & 4:
-    Envía los datos aislados del correo al motor de IA
-    y retorna el dictamen ('Sí es phishing' / 'No es phishing'), los indicios I1-I11
-    y el guion listo para el Avatar.
-    """
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return _error_mensaje("El cuerpo debe ser JSON válido.", 400)
     datos_correo = payload.get("correo")
+    if not isinstance(datos_correo, dict):
+        return _error_mensaje("No se recibió el objeto correo devuelto por /api/paso1-leer.", 400)
 
-    if not datos_correo:
-        return jsonify({"ok": False, "error": "No se recibieron los datos extraídos del correo."}), 400
+    if current_app.config.get("REQUIRE_SIGNED_CORREO", True):
+        if not _verificar_firma(datos_correo):
+            return _error_mensaje(
+                "El correo no tiene una firma de integridad válida. Vuelva a ejecutar el paso 1 y envíe su objeto completo.",
+                400,
+            )
 
-    if MOTOR_ALEX_DISPONIBLE:
-        resultado = analizar_correo_ia(datos_correo)
-    else:
-        resultado = _evaluacion_respaldo_si_falta_alex(datos_correo)
+    try:
+        if MOTOR_MODULO_DISPONIBLE and analizar_correo_ia:
+            resultado = analizar_correo_ia(datos_correo)
+        else:
+            resultado = _evaluacion_solo_reglas(datos_correo)
+    except Exception as exc:
+        current_app.logger.exception("Fallo al analizar correo")
+        return _error_mensaje(f"No se pudo completar el análisis: {type(exc).__name__}.", 500)
 
     resultado["canales_oficiales"] = CANALES_OFICIALES_IESS
     resultado["huella_auditoria_sha256"] = datos_correo.get("huella_sha256", "")
+    resultado["integridad_paso1_verificada"] = bool(datos_correo.get("token_integridad"))
     return jsonify({"ok": True, "resultado": resultado})
 
 
-@backend_bp.route("/api/auditoria-practica", methods=["GET"])
+@backend_bp.get("/api/auditoria-practica")
 def api_auditoria_practica():
-    """
-    Ejecuta automáticamente los 5 correos .eml de práctica (P01...P05).
-    """
-    carpeta_practica = os.path.join("data", "practica")
-    if not os.path.exists(carpeta_practica):
-        return jsonify({
-            "ok": False,
-            "error": "Coloque la carpeta (practica) dentro de (datos/practica) para ejecutar la auditoría."
-        }), 404
-
     resultados = []
-    for idx in range(1, 6):
-        nombre_eml = f"P0{idx}.eml"
-        ruta = os.path.join(carpeta_practica, nombre_eml)
-        if os.path.exists(ruta):
-            with open(ruta, "rb") as f:
-                extraido = extraer_correo_seguro(archivo_bytes=f.read(), nombre_archivo=nombre_eml)
-            eval_res = (
-                analizar_correo_ia(extraido)
-                if MOTOR_ALEX_DISPONIBLE
-                else _evaluacion_respaldo_si_falta_alex(extraido)
-            )
+    errores = []
+    for indice in range(1, 6):
+        nombre = f"P0{indice}.eml"
+        ruta = PRACTICA_DIR / nombre
+        if not ruta.is_file():
+            errores.append({"archivo": nombre, "error": "No encontrado"})
+            continue
+        try:
+            datos = extraer_correo_seguro(archivo_bytes=ruta.read_bytes(), nombre_archivo=nombre)
+            if MOTOR_MODULO_DISPONIBLE and analizar_correo_ia:
+                evaluacion = analizar_correo_ia(datos)
+            else:
+                evaluacion = _evaluacion_solo_reglas(datos)
             resultados.append({
-                "archivo": nombre_eml,
-                "remitente": extraido["remitente"],
-                "asunto": extraido["asunto"],
-                "veredicto": eval_res["veredicto"],
-                "indicios": eval_res["codigos_detectados"],
-                "huella_sha256": extraido["huella_sha256"][:16]
+                "archivo": nombre,
+                "remitente": datos["remitente"],
+                "asunto": datos["asunto"],
+                "veredicto": evaluacion.get("veredicto"),
+                "es_phishing": evaluacion.get("es_phishing"),
+                "indicios": evaluacion.get("codigos_detectados", []),
+                "total_indicios": evaluacion.get("total_indicios", 0),
+                "huella_sha256": datos["huella_sha256"],
+                "probabilidad_ml": evaluacion.get("probabilidad_ml"),
             })
+        except Exception as exc:
+            current_app.logger.exception("Error en auditoría de práctica: %s", nombre)
+            errores.append({"archivo": nombre, "error": type(exc).__name__})
 
     return jsonify({
-        "ok": True,
-        "motor_ia_conectado": MOTOR_ALEX_DISPONIBLE,
+        "ok": len(resultados) > 0,
+        "motor_ia_conectado": MOTOR_MODULO_DISPONIBLE,
+        "total_esperados": 5,
         "total_probados": len(resultados),
-        "resultados": resultados
-    })
+        "errores": errores,
+        "resultados": resultados,
+        "nota": "La auditoría procesa mensajes de ejemplo; no utiliza ni expone la hoja interna de respuestas.",
+    }), (200 if resultados else 404)
