@@ -7,83 +7,53 @@
   <link rel="stylesheet" href="/assets/css/estilos_intitucionales.css" />
   <link rel="stylesheet" href="/accesibilidad/css/accesibilidad.css" />
   <style>
-    /* La demo usa la misma apariencia sencilla del flujo principal */
-    *, *::before, *::after {
-      animation: none !important;
-      transition: none !important;
-      transform: none !important;
-      box-shadow: none !important;
+    /* Mantener la apariencia sencilla del flujo principal */
+    .progreso-analisis {
+      background: #f2f5fa;
+      border: 1px solid #d5deea;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
     }
+    #barraProgreso { width: 100%; height: 18px; accent-color: #1769aa; }
+    #porcentajeProgreso { text-align: right; font-weight: bold; color: #12345a; }
+    #listaComprobaciones, #indicadoresEncontrados { line-height: 2; }
 
-    body.vigia-con-barra,
-    body.vigia-con-voz { padding: 0 !important; }
-
-    .vg-barra, .vg-voz {
-      position: static !important;
-      inset: auto !important;
-      min-height: 0 !important;
-      justify-content: center !important;
-      flex-wrap: wrap;
-      padding: 12px !important;
-      gap: 6px !important;
-      background: #12345a !important;
-      color: #fff !important;
-      border: 0 !important;
-      border-radius: 0 !important;
-      font-family: Arial, sans-serif !important;
-    }
-
-    .vg-barra__titulo { font-size: 1rem !important; letter-spacing: 0 !important; }
-    .vg-barra__grupo { gap: 4px !important; }
-    .vg-btn, .vg-btn--voz {
-      min-width: 0 !important;
-      min-height: 0 !important;
-      padding: 10px 14px !important;
-      margin: 4px !important;
-      border: 0 !important;
-      border-radius: 6px !important;
-      background: #1769aa !important;
-      color: #fff !important;
-      font: 16px Arial, sans-serif !important;
-    }
-    .vg-voz__estado { color: #fff !important; }
-
-    /* Avatar: tarjeta blanca, bordes discretos y sin paneles azul oscuro */
-    body #avatar-asistente .vg-av {
+    /* Los módulos de accesibilidad se presentan como secciones normales */
+    body #avatar-asistente .vg-av,
+    body #cultura-consciente.vg-cc {
       max-width: 800px !important;
       margin: 20px auto !important;
+      padding: 25px !important;
       border: 1px solid #d5deea !important;
-      border-radius: 6px !important;
+      border-radius: 10px !important;
       background: #fff !important;
       color: #26354a !important;
-      font-family: Arial, sans-serif !important;
+      font: 16px Arial, sans-serif !important;
+      box-shadow: none !important;
     }
     body #avatar-asistente .vg-av__cab,
     body #avatar-asistente .vg-av__semaforo,
     body #avatar-asistente .vg-av__clase,
     body #avatar-asistente .vg-av__rep,
     body #avatar-asistente .vg-av__sub,
-    body #avatar-asistente .vg-av__veredicto {
-      border-radius: 0 !important;
-      background: #fff !important;
+    body #avatar-asistente .vg-av__veredicto,
+    body #cultura-consciente.vg-cc .vg-cc__paso,
+    body #cultura-consciente.vg-cc .vg-cc__aviso {
+      border-radius: 6px !important;
+      background: #f2f5fa !important;
       color: #26354a !important;
-      border-color: #d5deea !important;
-      font-family: Arial, sans-serif !important;
-      font-size: 16px !important;
+      border: 1px solid #d5deea !important;
+      font: 16px Arial, sans-serif !important;
       line-height: 1.5 !important;
+      box-shadow: none !important;
     }
-    body #avatar-asistente .vg-av__cab,
-    body #avatar-asistente .vg-av__semaforo { background: #f2f5fa !important; }
     body #avatar-asistente .vg-av__sub {
       min-height: 0 !important;
       max-height: none !important;
-      padding: 16px !important;
+      padding: 15px !important;
       font-size: 16px !important;
       font-weight: normal !important;
-    }
-    body #avatar-asistente .vg-av__veredicto {
-      font-size: 18px !important;
-      font-weight: bold !important;
     }
     body #avatar-asistente .vg-av__svg,
     body #avatar-asistente .vg-av__mv {
@@ -94,68 +64,24 @@
     body #avatar-asistente .vg-av__btn,
     body #avatar-asistente .vg-av__btn-sec,
     body #avatar-asistente .vg-av__op,
-    body #avatar-asistente .vg-av__copia {
-      min-height: 0 !important;
-      margin: 5px !important;
-      padding: 10px 14px !important;
-      border: 0 !important;
-      border-radius: 6px !important;
-      background: #1769aa !important;
-      color: #fff !important;
-      font: 16px Arial, sans-serif !important;
-    }
-    body #avatar-asistente .vg-av__op--ok { background: #e8f5e9 !important; color: #1b5e20 !important; border: 1px solid #2e7d32 !important; }
-    body #avatar-asistente .vg-av__op--mal { background: #fdecea !important; color: #8e1b1b !important; border: 1px solid #c62828 !important; }
-    body #avatar-asistente .vg-sem__luces { background: #d5deea !important; }
-    body #avatar-asistente .vg-av__3d-nota { background: #f2f5fa !important; color: #26354a !important; }
-
-    /* Cultura consciente: mismo ancho y estilo que las secciones del index */
-    body #cultura-consciente.vg-cc {
-      max-width: 800px !important;
-      margin: 20px auto !important;
-      padding: 25px !important;
-      border: 1px solid #d5deea !important;
-      border-radius: 6px !important;
-      background: #fff !important;
-      color: #26354a !important;
-      font: 16px Arial, sans-serif !important;
-    }
-    body #cultura-consciente.vg-cc h2 { font-size: 24px !important; }
-    body #cultura-consciente.vg-cc h3 { font-size: 18px !important; }
-    body #cultura-consciente.vg-cc p,
-    body #cultura-consciente.vg-cc li,
-    body #cultura-consciente.vg-cc span { font-size: 16px !important; line-height: 1.5 !important; }
-    body #cultura-consciente.vg-cc .vg-cc__pasos { display: block !important; list-style: decimal !important; padding-left: 25px !important; }
-    body #cultura-consciente.vg-cc .vg-cc__paso {
-      display: block !important;
-      margin: 10px 0 !important;
-      padding: 12px !important;
-      border: 1px solid #d5deea !important;
-      border-radius: 6px !important;
-      background: #f2f5fa !important;
-      color: #26354a !important;
-    }
-    body #cultura-consciente.vg-cc .vg-cc__num,
-    body #cultura-consciente.vg-cc .vg-cc__ico { display: none !important; }
+    body #avatar-asistente .vg-av__copia,
     body #cultura-consciente.vg-cc .vg-cc__btn,
     body #cultura-consciente.vg-cc .vg-cc__op {
       min-height: 0 !important;
-      margin: 5px !important;
       padding: 10px 14px !important;
+      margin: 5px !important;
       border: 0 !important;
       border-radius: 6px !important;
       background: #1769aa !important;
       color: #fff !important;
       font: 16px Arial, sans-serif !important;
     }
-    body #cultura-consciente.vg-cc .vg-cc__aviso {
-      padding: 12px !important;
-      border-left: 4px solid #1769aa !important;
-      background: #f2f5fa !important;
-      color: #26354a !important;
-    }
+    body #cultura-consciente.vg-cc .vg-cc__pasos { display: block !important; list-style: decimal !important; padding-left: 25px !important; }
+    body #cultura-consciente.vg-cc .vg-cc__paso { display: block !important; margin: 10px 0 !important; padding: 12px !important; }
+    body #cultura-consciente.vg-cc .vg-cc__num,
+    body #cultura-consciente.vg-cc .vg-cc__ico { display: none !important; }
+    body #cultura-consciente.vg-cc .vg-cc__txt { display: block !important; }
 
-    /* El alto contraste sigue disponible, pero con texto legible en todos los paneles */
     html.alto-contraste body { background: #000 !important; color: #fff !important; }
     html.alto-contraste body #avatar-asistente .vg-av,
     html.alto-contraste body #avatar-asistente .vg-av__cab,
@@ -171,11 +97,6 @@
       color: #fff !important;
       border-color: #ffe600 !important;
     }
-    html.alto-contraste body #avatar-asistente .vg-av__sub {
-      background: #000 !important;
-      color: #ffe600 !important;
-      border: 1px solid #ffe600 !important;
-    }
     html.alto-contraste body #avatar-asistente .vg-av__btn,
     html.alto-contraste body #avatar-asistente .vg-av__btn-sec,
     html.alto-contraste body #avatar-asistente .vg-av__op,
@@ -186,8 +107,6 @@
       color: #ffe600 !important;
       border: 2px solid #ffe600 !important;
     }
-    html.alto-contraste body #avatar-asistente .vg-av__op--ok { color: #fff !important; }
-    html.alto-contraste body #avatar-asistente .vg-av__op--mal { color: #fff !important; }
   </style>
 </head>
 <body>
@@ -197,14 +116,14 @@
   </header>
 
   <nav aria-label="Pasos de la demostración">
-    <button type="button" onclick="mostrarVentana(1)">1. Subir Correo</button>
-    <button type="button" onclick="mostrarVentana(2)">2. Lectura Segura</button>
-    <button type="button" onclick="mostrarVentana(3)">3. Análisis en Vivo</button>
-    <button type="button" onclick="mostrarVentana(4)">4. Veredicto Final</button>
+    <button type="button" data-ir-paso="1" onclick="mostrarVentana(1)">1. Subir Correo</button>
+    <button type="button" data-ir-paso="2" onclick="mostrarVentana(2)">2. Lectura Segura</button>
+    <button type="button" data-ir-paso="3" onclick="mostrarVentana(3)">3. Análisis en Vivo</button>
+    <button type="button" data-ir-paso="4" onclick="mostrarVentana(4)">4. Veredicto Final</button>
   </nav>
 
   <main>
-    <section id="ventana1" class="ventana-activa">
+    <section id="ventana1" class="paso ventana-activa">
       <h2>Subir Correo</h2>
       <p>Selecciona el correo de ejemplo que deseas revisar.</p>
       <div id="correo-leido">
@@ -215,7 +134,7 @@
       <button type="button" onclick="mostrarVentana(2)">Continuar a Lectura Segura →</button>
     </section>
 
-    <section id="ventana2" class="ventana-oculta">
+    <section id="ventana2" class="paso ventana-oculta">
       <h2>Lectura Segura</h2>
       <p>Revisa los datos del correo. La información es ficticia.</p>
       <p><strong>Remitente:</strong> <span id="remitente">soporte@servicio-falso.example</span></p>
@@ -321,13 +240,74 @@
 
       var casoSeguro = { es_phishing: false, indicios: [] };
 
-      document.getElementById('btn-sim-phishing').addEventListener('click', function () {
-        window.VigiaAvatar.explicar(casoPhishing);
-      });
+      var botonPhishing = document.getElementById('btn-sim-phishing');
+      var botonSeguro = document.getElementById('btn-sim-seguro');
+      var barra = document.getElementById('barraProgreso');
+      var porcentaje = document.getElementById('porcentajeProgreso');
+      var estado = document.getElementById('estadoAnalisis');
+      var lista = document.getElementById('listaComprobaciones');
+      var analisisActivo = false;
 
-      document.getElementById('btn-sim-seguro').addEventListener('click', function () {
-        window.VigiaAvatar.explicar(casoSeguro);
-      });
+      function esperar(ms) {
+        return new Promise(function (resolve) { setTimeout(resolve, ms); });
+      }
+
+      async function avanzar(inicio, fin, duracion, mensaje, comprobacion) {
+        estado.textContent = mensaje;
+        var pasos = Math.ceil(duracion / 70);
+        for (var i = 1; i <= pasos; i++) {
+          var valor = Math.round(inicio + (fin - inicio) * i / pasos);
+          barra.value = valor;
+          porcentaje.textContent = valor + ' %';
+          await esperar(duracion / pasos);
+        }
+        if (comprobacion) {
+          var li = document.createElement('li');
+          li.textContent = comprobacion;
+          lista.appendChild(li);
+        }
+      }
+
+      async function analizarDemo(caso) {
+        if (analisisActivo) return;
+        analisisActivo = true;
+        botonPhishing.disabled = true;
+        botonSeguro.disabled = true;
+        lista.textContent = '';
+        barra.value = 0;
+        porcentaje.textContent = '0 %';
+        estado.textContent = 'Preparando la revisión…';
+        try {
+          await avanzar(0, 30, 750, 'Leyendo el remitente y el asunto…', 'Remitente y asunto revisados.');
+          await avanzar(30, 65, 900, 'Revisando enlaces y señales de urgencia…', 'Enlaces y mensaje revisados.');
+          await avanzar(65, 92, 750, 'Comprobando solicitudes de datos personales…', 'Solicitudes de datos revisadas.');
+          await avanzar(92, 100, 300, 'Preparando el resultado…', 'Revisión finalizada.');
+          estado.textContent = 'Análisis completado.';
+          document.getElementById('resultadoAnalisis').textContent = caso.es_phishing
+            ? 'Se detectaron señales de posible phishing'
+            : 'No se detectaron señales de phishing en este ejemplo';
+          document.getElementById('indicadoresEncontrados').textContent = '';
+          (caso.indicios || []).forEach(function (indicio) {
+            var li = document.createElement('li');
+            li.textContent = indicio.nombre + ': ' + indicio.explicacion;
+            document.getElementById('indicadoresEncontrados').appendChild(li);
+          });
+          if (!caso.es_phishing) {
+            var liSeguro = document.createElement('li');
+            liSeguro.textContent = 'No se encontraron indicadores en esta simulación.';
+            document.getElementById('indicadoresEncontrados').appendChild(liSeguro);
+          }
+          window.VigiaAvatar.explicar(caso);
+          mostrarVentana(4);
+        } finally {
+          analisisActivo = false;
+          botonPhishing.disabled = false;
+          botonSeguro.disabled = false;
+        }
+      }
+
+      botonPhishing.addEventListener('click', function () { analizarDemo(casoPhishing); });
+      botonSeguro.addEventListener('click', function () { analizarDemo(casoSeguro); });
     })();
   </script>
 </body>
