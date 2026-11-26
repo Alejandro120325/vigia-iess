@@ -35,7 +35,7 @@ app.register_blueprint(backend_bp)
 @app.get("/")
 def inicio():
     """Entrega la aplicación web principal."""
-    return send_from_directory(WEB_DIR, "index.html")
+    return send_from_directory(WEB_DIR, "index_integrado.html")
 
 
 @app.get("/assets/<path:filename>")
