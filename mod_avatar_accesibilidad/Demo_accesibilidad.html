@@ -1,132 +1,174 @@
 <!DOCTYPE html>
-<html lang="es-EC">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Demo clase interactiva · VIGÍA-IESS</title>
-  <link rel="stylesheet" href="css/accesibilidad.css">
-  <style>
-    body {
-      font-family: system-ui, "Segoe UI", Arial, sans-serif;
-      font-size: 1.125rem;
-      line-height: 1.6;
-      margin: 0 auto;
-      max-width: 48rem;
-      padding: 1rem;
-      background: #fdfaf3;
-      color: #1a1a1a;
-    }
-    .tarjeta {
-      border: .15rem solid #0b2e59;
-      border-radius: .8rem;
-      padding: 1rem 1.25rem;
-      margin-top: 1rem;
-      background: #fff;
-    }
-    .prueba {
-      min-height: 3rem;
-      margin: .5rem .5rem 0 0;
-      padding: .45rem 1rem;
-      font-size: 1.05rem;
-      font-weight: 700;
-      border: .15rem solid #0b2e59;
-      border-radius: .6rem;
-      background: #fff;
-      color: #0b2e59;
-      cursor: pointer;
-    }
-    .prueba:hover {
-      background: #ffc20e;
-      color: #000;
-    }
-    html.alto-contraste .tarjeta {
-      background: #000;
-      color: #fff;
-      border-color: #ffe600;
-    }
-  </style>
-</head>
-<body>
-  <main id="contenido-principal">
-    <h1>Demo: Clase interactiva, semáforo y preguntas</h1>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vigia IESS · Demo de accesibilidad</title>
+    <link rel="stylesheet" href="/assets/css/estilos_intitucionales.css" />
+    <link rel="stylesheet" href="/accesibilidad/css/accesibilidad.css" />
+    <style>
+      .tarjeta {
+        border: .15rem solid #0b2e59;
+        border-radius: .8rem;
+        padding: 1rem 1.25rem;
+        margin-top: 1rem;
+        background: #fff;
+      }
+      .prueba {
+        min-height: 3rem;
+        margin: .5rem .5rem 0 0;
+        padding: .45rem 1rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        border: .15rem solid #0b2e59;
+        border-radius: .6rem;
+        background: #fff;
+        color: #0b2e59;
+        cursor: pointer;
+      }
+      .prueba:hover {
+        background: #ffc20e;
+        color: #000;
+      }
+      html.alto-contraste .tarjeta {
+        background: #000;
+        color: #fff;
+        border-color: #ffe600;
+      }
+      .demo-ayuda {
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Vigia IESS</h1>
+      <p>Protege tu información. Identifica correos sospechosos.</p>
+      <p>Demostración de accesibilidad y educación interactiva</p>
+    </header>
 
-    <div class="tarjeta">
-      <p>Pruebe los botones <strong>-</strong>, <strong>+</strong>, <strong>100%</strong> y <strong>Contraste</strong> de la barra superior, y use los controles de voz de abajo.</p>
-    </div>
+    <nav aria-label="Navegación de la demostración">
+      <button type="button" onclick="mostrarVentanaDemo(1)">1. Correo de ejemplo</button>
+      <button type="button" onclick="mostrarVentanaDemo(2)">2. Controles de prueba</button>
+      <button type="button" onclick="mostrarVentanaDemo(3)">3. Semáforo y preguntas</button>
+      <button type="button" onclick="window.location.href='/'">Inicio Vigia IESS</button>
+    </nav>
 
-    <h2>Correo de ejemplo</h2>
-    <div class="tarjeta" id="correo-leido" data-correo>
-      <p><strong>De:</strong> soporte@servicio-falso.example</p>
-      <p><strong>Asunto:</strong> Su cuenta será bloqueada hoy.</p>
-      <p>Estimado afiliado, debe confirmar sus datos de inmediato haciendo clic en el enlace antes de las 17:00 para evitar el bloqueo de su cuenta.</p>
-    </div>
+    <main id="contenido-principal">
+      <section id="ventana1" class="ventana-activa">
+        <h2>Correo de ejemplo</h2>
+        <p class="demo-ayuda">Este mensaje es ficticio y se utiliza para practicar cómo reconocer señales de phishing.</p>
 
-    <h2>Controles de prueba</h2>
-    <button id="btn-sim-phishing" class="prueba" type="button">Simular: SÍ es phishing (3 fallos)</button>
-    <button id="btn-sim-seguro" class="prueba" type="button">Simular: NO es phishing</button>
+        <div class="tarjeta" id="correo-leido" data-correo>
+          <p><strong>De:</strong> soporte@servicio-falso.example</p>
+          <p><strong>Asunto:</strong> Su cuenta será bloqueada hoy.</p>
+          <p>Estimado afiliado, debe confirmar sus datos de inmediato haciendo clic en el enlace antes de las 17:00 para evitar el bloqueo de su cuenta.</p>
+        </div>
 
-    <div id="avatar-asistente"></div>
-    <div id="cultura-consciente"></div>
-  </main>
+        <button type="button" onclick="mostrarVentanaDemo(2)">Continuar a Controles de prueba →</button>
+      </section>
 
-  <script src="control_zoom.js"></script>
-  <script src="lector_voz.js"></script>
-  <script src="avatar_asistente.js"></script>
-  <script src="cultura_consciente.js"></script>
-  <script>
-    (function () {
-      var casoPhishing = {
-        es_phishing: true,
-        indicios: [
-          {
-            nombre: 'Dominio falso del remitente',
-            explicacion: 'El correo viene de servicio-falso.example y no de un dominio oficial.',
-            pregunta: {
-              enunciado: 'El remitente es soporte@servicio-falso.example. ¿Qué conviene hacer?',
-              opciones: [
-                { t: 'Desconfiar: el dominio no corresponde a un canal oficial.', ok: true, f: 'Revisar la dirección completa del remitente ayuda a detectar suplantaciones.' },
-                { t: 'Confiar porque dice «soporte» al inicio.', ok: false, f: 'Cualquier persona puede escribir «soporte» en un correo falso.' }
-              ]
+      <section id="ventana2" class="ventana-oculta">
+        <h2>Controles de prueba</h2>
+        <p>Pruebe los botones <strong>-</strong>, <strong>+</strong>, <strong>100%</strong> y <strong>Contraste</strong> de la barra superior. También puede usar los controles de voz de la parte inferior.</p>
+        <div class="tarjeta">
+          <p>Estos controles permiten cambiar el tamaño del texto, activar alto contraste y escuchar el contenido de la página.</p>
+          <p>Use el botón de lectura de pantalla para escuchar el correo de ejemplo o el contenido de esta demostración.</p>
+        </div>
+        <button type="button" onclick="mostrarVentanaDemo(1)">← Volver al correo</button>
+        <button type="button" onclick="mostrarVentanaDemo(3)">Continuar a Semáforo y preguntas →</button>
+      </section>
+
+      <section id="ventana3" class="ventana-oculta">
+        <h2>Semáforo y preguntas</h2>
+        <p>Seleccione una opción para que el asistente explique las señales detectadas y presente preguntas educativas.</p>
+        <button id="btn-sim-phishing" class="prueba" type="button">Simular: SÍ es phishing (3 fallos)</button>
+        <button id="btn-sim-seguro" class="prueba" type="button">Simular: NO es phishing</button>
+
+        <div id="avatar-asistente"></div>
+        <div id="cultura-consciente"></div>
+
+        <button type="button" onclick="mostrarVentanaDemo(2)">← Volver a Controles</button>
+      </section>
+    </main>
+
+    <footer>
+      <p>VigíaIESS - Educación y seguridad de la información</p>
+      <p>Herramienta educativa para identificar correos sospechosos.</p>
+      <p><a href="/">Volver a la aplicación principal</a></p>
+    </footer>
+
+    <script>
+      function mostrarVentanaDemo(numero) {
+        for (var i = 1; i <= 3; i++) {
+          var ventana = document.getElementById('ventana' + i);
+          if (!ventana) continue;
+          ventana.className = i === numero ? 'ventana-activa' : 'ventana-oculta';
+        }
+        var botones = document.querySelectorAll('nav button');
+        botones.forEach(function (boton, indice) {
+          boton.classList.toggle('paso-activo', indice + 1 === numero);
+        });
+        window.scrollTo(0, 0);
+      }
+
+      (function () {
+        var casoPhishing = {
+          es_phishing: true,
+          indicios: [
+            {
+              nombre: 'Dominio falso del remitente',
+              explicacion: 'El correo viene de servicio-falso.example y no de un dominio oficial.',
+              pregunta: {
+                enunciado: 'El remitente es soporte@servicio-falso.example. ¿Qué conviene hacer?',
+                opciones: [
+                  { t: 'Desconfiar: el dominio no corresponde a un canal oficial.', ok: true, f: 'Revisar la dirección completa del remitente ayuda a detectar suplantaciones.' },
+                  { t: 'Confiar porque dice «soporte» al inicio.', ok: false, f: 'Cualquier persona puede escribir «soporte» en un correo falso.' }
+                ]
+              }
+            },
+            {
+              nombre: 'Urgencia para presionar',
+              explicacion: 'Dice que su cuenta será bloqueada hoy mismo para que actúe sin pensar.',
+              pregunta: {
+                enunciado: 'Cuando un mensaje exige actuar «de inmediato» o amenaza con bloquear su cuenta, ¿qué busca?',
+                opciones: [
+                  { t: 'Hacer clic o dar datos rápido sin verificar.', ok: true, f: 'La prisa artificial es un truco clásico para que usted no revise con calma.' },
+                  { t: 'Facilitarle el trámite sin riesgos.', ok: false, f: 'Las amenazas urgentes suelen ser una trampa para apurar su decisión.' }
+                ]
+              }
+            },
+            {
+              nombre: 'Pedido de confirmar datos por enlace',
+              explicacion: 'Le pide confirmar sus datos haciendo clic en un enlace del correo.',
+              pregunta: {
+                enunciado: 'Le piden confirmar sus datos desde un enlace del correo. ¿Cuál es la acción más segura?',
+                opciones: [
+                  { t: 'No hacer clic y entrar por su cuenta o canal oficial conocido.', ok: true, f: 'Verificar por un canal oficial conocido protege sus claves y datos.' },
+                  { t: 'Ingresar su clave en el enlace para salir de la duda.', ok: false, f: 'Nunca entregue claves ni datos sensibles desde enlaces de correos dudosos.' }
+                ]
+              }
             }
-          },
-          {
-            nombre: 'Urgencia para presionar',
-            explicacion: 'Dice que su cuenta será bloqueada hoy mismo para que actúe sin pensar.',
-            pregunta: {
-              enunciado: 'Cuando un mensaje exige actuar «de inmediato» o amenaza con bloquear su cuenta, ¿qué busca?',
-              opciones: [
-                { t: 'Hacer clic o dar datos rápido sin verificar.', ok: true, f: 'La prisa artificial es un truco clásico para que usted no revise con calma.' },
-                { t: 'Facilitarle el trámite sin riesgos.', ok: false, f: 'Las amenazas urgentes suelen ser una trampa para apurar su decisión.' }
-              ]
-            }
-          },
-          {
-            nombre: 'Pedido de confirmar datos por enlace',
-            explicacion: 'Le pide confirmar sus datos haciendo clic en un enlace del correo.',
-            pregunta: {
-              enunciado: 'Le piden confirmar sus datos desde un enlace del correo. ¿Cuál es la acción más segura?',
-              opciones: [
-                { t: 'No hacer clic y entrar por su cuenta o canal oficial conocido.', ok: true, f: 'Verificar por un canal oficial conocido protege sus claves y datos.' },
-                { t: 'Ingresar su clave en el enlace para salir de la duda.', ok: false, f: 'Nunca entregue claves ni datos sensibles desde enlaces de correos dudosos.' }
-              ]
-            }
-          }
-        ]
-      };
+          ]
+        };
 
-      var casoSeguro = {
-        es_phishing: false,
-        indicios: []
-      };
+        var casoSeguro = {
+          es_phishing: false,
+          indicios: []
+        };
 
-      document.getElementById('btn-sim-phishing').addEventListener('click', function () {
-        window.VigiaAvatar.explicar(casoPhishing);
-      });
+        document.getElementById('btn-sim-phishing').addEventListener('click', function () {
+          window.VigiaAvatar.explicar(casoPhishing);
+        });
 
-      document.getElementById('btn-sim-seguro').addEventListener('click', function () {
-        window.VigiaAvatar.explicar(casoSeguro);
-      });
-    })();
-  </script>
-</body>
+        document.getElementById('btn-sim-seguro').addEventListener('click', function () {
+          window.VigiaAvatar.explicar(casoSeguro);
+        });
+      })();
+    </script>
+    <script src="/accesibilidad/control_zoom.js"></script>
+    <script src="/accesibilidad/lector_voz.js"></script>
+    <script src="/accesibilidad/avatar_asistente.js"></script>
+    <script src="/accesibilidad/cultura_consciente.js"></script>
+  </body>
 </html>
