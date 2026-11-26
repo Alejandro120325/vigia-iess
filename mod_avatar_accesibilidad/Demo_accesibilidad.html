@@ -7,33 +7,187 @@
   <link rel="stylesheet" href="/assets/css/estilos_intitucionales.css" />
   <link rel="stylesheet" href="/accesibilidad/css/accesibilidad.css" />
   <style>
-    /* Estilos sencillos para que esta demo mantenga la apariencia del flujo principal */
+    /* La demo usa la misma apariencia sencilla del flujo principal */
     *, *::before, *::after {
       animation: none !important;
       transition: none !important;
       transform: none !important;
       box-shadow: none !important;
     }
+
+    body.vigia-con-barra,
+    body.vigia-con-voz { padding: 0 !important; }
+
     .vg-barra, .vg-voz {
       position: static !important;
-      justify-content: center;
+      inset: auto !important;
+      min-height: 0 !important;
+      justify-content: center !important;
+      flex-wrap: wrap;
+      padding: 12px !important;
+      gap: 6px !important;
+      background: #12345a !important;
+      color: #fff !important;
+      border: 0 !important;
       border-radius: 0 !important;
+      font-family: Arial, sans-serif !important;
     }
-    body.vigia-con-barra { padding-top: 0 !important; }
-    body.vigia-con-voz { padding-bottom: 0 !important; }
-    .vg-av {
-      max-width: 800px;
-      margin: 20px auto;
+
+    .vg-barra__titulo { font-size: 1rem !important; letter-spacing: 0 !important; }
+    .vg-barra__grupo { gap: 4px !important; }
+    .vg-btn, .vg-btn--voz {
+      min-width: 0 !important;
+      min-height: 0 !important;
+      padding: 10px 14px !important;
+      margin: 4px !important;
+      border: 0 !important;
+      border-radius: 6px !important;
+      background: #1769aa !important;
+      color: #fff !important;
+      font: 16px Arial, sans-serif !important;
+    }
+    .vg-voz__estado { color: #fff !important; }
+
+    /* Avatar: tarjeta blanca, bordes discretos y sin paneles azul oscuro */
+    body #avatar-asistente .vg-av {
+      max-width: 800px !important;
+      margin: 20px auto !important;
       border: 1px solid #d5deea !important;
       border-radius: 6px !important;
+      background: #fff !important;
+      color: #26354a !important;
+      font-family: Arial, sans-serif !important;
     }
-    .vg-av__cab, .vg-av__semaforo, .vg-av__clase,
-    .vg-av__rep, .vg-av__sub, .vg-av__veredicto {
+    body #avatar-asistente .vg-av__cab,
+    body #avatar-asistente .vg-av__semaforo,
+    body #avatar-asistente .vg-av__clase,
+    body #avatar-asistente .vg-av__rep,
+    body #avatar-asistente .vg-av__sub,
+    body #avatar-asistente .vg-av__veredicto {
       border-radius: 0 !important;
+      background: #fff !important;
+      color: #26354a !important;
+      border-color: #d5deea !important;
+      font-family: Arial, sans-serif !important;
+      font-size: 16px !important;
+      line-height: 1.5 !important;
     }
-    .vg-av__svg, .vg-av__mv { width: 5rem !important; height: 5rem !important; }
-    .vg-ondas { display: none !important; }
-    .vg-parpado { animation: none !important; }
+    body #avatar-asistente .vg-av__cab,
+    body #avatar-asistente .vg-av__semaforo { background: #f2f5fa !important; }
+    body #avatar-asistente .vg-av__sub {
+      min-height: 0 !important;
+      max-height: none !important;
+      padding: 16px !important;
+      font-size: 16px !important;
+      font-weight: normal !important;
+    }
+    body #avatar-asistente .vg-av__veredicto {
+      font-size: 18px !important;
+      font-weight: bold !important;
+    }
+    body #avatar-asistente .vg-av__svg,
+    body #avatar-asistente .vg-av__mv {
+      width: 5rem !important;
+      height: 5rem !important;
+    }
+    body #avatar-asistente .vg-ondas { display: none !important; }
+    body #avatar-asistente .vg-av__btn,
+    body #avatar-asistente .vg-av__btn-sec,
+    body #avatar-asistente .vg-av__op,
+    body #avatar-asistente .vg-av__copia {
+      min-height: 0 !important;
+      margin: 5px !important;
+      padding: 10px 14px !important;
+      border: 0 !important;
+      border-radius: 6px !important;
+      background: #1769aa !important;
+      color: #fff !important;
+      font: 16px Arial, sans-serif !important;
+    }
+    body #avatar-asistente .vg-av__op--ok { background: #e8f5e9 !important; color: #1b5e20 !important; border: 1px solid #2e7d32 !important; }
+    body #avatar-asistente .vg-av__op--mal { background: #fdecea !important; color: #8e1b1b !important; border: 1px solid #c62828 !important; }
+    body #avatar-asistente .vg-sem__luces { background: #d5deea !important; }
+    body #avatar-asistente .vg-av__3d-nota { background: #f2f5fa !important; color: #26354a !important; }
+
+    /* Cultura consciente: mismo ancho y estilo que las secciones del index */
+    body #cultura-consciente.vg-cc {
+      max-width: 800px !important;
+      margin: 20px auto !important;
+      padding: 25px !important;
+      border: 1px solid #d5deea !important;
+      border-radius: 6px !important;
+      background: #fff !important;
+      color: #26354a !important;
+      font: 16px Arial, sans-serif !important;
+    }
+    body #cultura-consciente.vg-cc h2 { font-size: 24px !important; }
+    body #cultura-consciente.vg-cc h3 { font-size: 18px !important; }
+    body #cultura-consciente.vg-cc p,
+    body #cultura-consciente.vg-cc li,
+    body #cultura-consciente.vg-cc span { font-size: 16px !important; line-height: 1.5 !important; }
+    body #cultura-consciente.vg-cc .vg-cc__pasos { display: block !important; list-style: decimal !important; padding-left: 25px !important; }
+    body #cultura-consciente.vg-cc .vg-cc__paso {
+      display: block !important;
+      margin: 10px 0 !important;
+      padding: 12px !important;
+      border: 1px solid #d5deea !important;
+      border-radius: 6px !important;
+      background: #f2f5fa !important;
+      color: #26354a !important;
+    }
+    body #cultura-consciente.vg-cc .vg-cc__num,
+    body #cultura-consciente.vg-cc .vg-cc__ico { display: none !important; }
+    body #cultura-consciente.vg-cc .vg-cc__btn,
+    body #cultura-consciente.vg-cc .vg-cc__op {
+      min-height: 0 !important;
+      margin: 5px !important;
+      padding: 10px 14px !important;
+      border: 0 !important;
+      border-radius: 6px !important;
+      background: #1769aa !important;
+      color: #fff !important;
+      font: 16px Arial, sans-serif !important;
+    }
+    body #cultura-consciente.vg-cc .vg-cc__aviso {
+      padding: 12px !important;
+      border-left: 4px solid #1769aa !important;
+      background: #f2f5fa !important;
+      color: #26354a !important;
+    }
+
+    /* El alto contraste sigue disponible, pero con texto legible en todos los paneles */
+    html.alto-contraste body { background: #000 !important; color: #fff !important; }
+    html.alto-contraste body #avatar-asistente .vg-av,
+    html.alto-contraste body #avatar-asistente .vg-av__cab,
+    html.alto-contraste body #avatar-asistente .vg-av__semaforo,
+    html.alto-contraste body #avatar-asistente .vg-av__clase,
+    html.alto-contraste body #avatar-asistente .vg-av__rep,
+    html.alto-contraste body #avatar-asistente .vg-av__sub,
+    html.alto-contraste body #avatar-asistente .vg-av__veredicto,
+    html.alto-contraste body #cultura-consciente.vg-cc,
+    html.alto-contraste body #cultura-consciente.vg-cc .vg-cc__paso,
+    html.alto-contraste body #cultura-consciente.vg-cc .vg-cc__aviso {
+      background: #000 !important;
+      color: #fff !important;
+      border-color: #ffe600 !important;
+    }
+    html.alto-contraste body #avatar-asistente .vg-av__sub {
+      background: #000 !important;
+      color: #ffe600 !important;
+      border: 1px solid #ffe600 !important;
+    }
+    html.alto-contraste body #avatar-asistente .vg-av__btn,
+    html.alto-contraste body #avatar-asistente .vg-av__btn-sec,
+    html.alto-contraste body #avatar-asistente .vg-av__op,
+    html.alto-contraste body #avatar-asistente .vg-av__copia,
+    html.alto-contraste body #cultura-consciente.vg-cc .vg-cc__btn,
+    html.alto-contraste body #cultura-consciente.vg-cc .vg-cc__op {
+      background: #000 !important;
+      color: #ffe600 !important;
+      border: 2px solid #ffe600 !important;
+    }
+    html.alto-contraste body #avatar-asistente .vg-av__op--ok { color: #fff !important; }
+    html.alto-contraste body #avatar-asistente .vg-av__op--mal { color: #fff !important; }
   </style>
 </head>
 <body>
