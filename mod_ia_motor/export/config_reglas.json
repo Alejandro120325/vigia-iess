@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "regla_negocio": "Phishing si se detecta al menos un indicio I1-I11.",
+  "listas_blancas": [
+    "iess.gob.ec",
+    "app.iess.gob.ec",
+    "denuncias.iess.gob.ec",
+    "gob.ec",
+    "sri.gob.ec",
+    "registrocivil.gob.ec",
+    "microsoft.com",
+    "google.com",
+    "zoom.us"
+  ],
+  "listas_negras": {
+    "dominios_acortadores": [
+      "bit.ly",
+      "cutt.ly",
+      "cshort.jp",
+      "tinyurl.com",
+      "t.co",
+      "goo.gl"
+    ],
+    "dominios_correo_gratuito": [
+      "gmail.com",
+      "hotmail.com",
+      "outlook.com",
+      "yahoo.com",
+      "yahoo.es",
+      "icloud.com",
+      "live.com",
+      "proton.me"
+    ],
+    "extensiones_sospechosas": [
+      ".zip",
+      ".exe",
+      ".apk",
+      ".html",
+      ".htm",
+      ".js",
+      ".docm",
+      ".xlsm"
+    ]
+  },
+  "remitentes_iess_oficiales": [
+    "iess.gob.ec"
+  ],
+  "patrones": {
+    "I1": [
+      "\\b(?:act[uú]e|actuar|responda|confirme|valide|regularice)\\s+(?:hoy|ahora|de inmediato|inmediatamente)\\b",
+      "\\b(?:[uú]ltimo aviso|plazo m[aá]ximo|en las pr[oó]ximas?\\s+\\d+\\s*(?:horas?|minutos?)|antes de hoy)\\b",
+      "\\b(?:urgente|con urgencia|acci[oó]n inmediata)\\b"
+    ],
+    "I2": [
+      "https?://[^\\s<>\\\"'()[\\]]+"
+    ],
+    "I3": [
+      "\\b(?:ingrese|env[ií]e|comparta|confirme|actualice|proporcione)\\b.{0,70}\\b(?:contrase[nñ]a|clave|c[oó]digo|token|tarjeta|CVV|PIN)\\b",
+      "\\b(?:contrase[nñ]a|clave|c[oó]digo|token|tarjeta|CVV|PIN)\\b.{0,70}\\b(?:ingrese|env[ií]e|comparta|confirme|actualice|proporcione)\\b",
+      "\\b(?:usuario\\s+y\\s+contrase[nñ]a|credenciales)\\b"
+    ],
+    "I4": [
+      "https?://(?:bit\\.ly|cutt\\.ly|cshort\\.jp|tinyurl\\.com|t\\.co|goo\\.gl)/",
+      "<a\\b[^>]*href\\s*=\\s*['\\\"][^'\\\"]+['\\\"][^>]*>.*?</a\\s*>"
+    ],
+    "I5": [
+      "\\b[\\w.-]+\\.(?:zip|exe|apk|html?|js|docm|xlsm)\\b",
+      "\\b(?:instale|descargue|instalar|descargar)\\b.{0,50}\\b(?:aplicaci[oó]n|app|programa|archivo)\\b",
+      "\\b(?:aplicaci[oó]n|app|programa)\\b.{0,50}\\b(?:instale|descargue|instalar|descargar)\\b"
+    ],
+    "I6": [
+      "\\b(?:premio|bono|reembolso|devoluci[oó]n|saldo a su favor|pago en exceso)\\b",
+      "\\b(?:ha ganado|gan[oó]|reciba)\\b.{0,40}\\b(?:premio|bono|reembolso|dinero)\\b"
+    ],
+    "I8": [
+      "\\b(?:suspensi[oó]n|suspend(?:er|ida)|bloqueo|bloquear|multa|embargo|p[eé]rdida de beneficios?)\\b",
+      "\\b(?:ser[aá] suspendid[oa]|se bloquear[aá]|perder[aá] sus beneficios)\\b"
+    ],
+    "I9": [
+      "\\b(?:env[ií]e|ingrese|proporcione|adjunte|cargue|confirme)\\b.{0,70}\\b(?:c[eé]dula|identificaci[oó]n|fecha de nacimiento|documento|selfie|datos personales)\\b",
+      "\\b(?:c[eé]dula|fecha de nacimiento|selfie con documento|datos personales)\\b"
+    ],
+    "I10": [
+      "\\b(?:transfiera|deposite|pague|realice el pago|efect[uú]e el pago|env[ií]e dinero)\\b",
+      "\\b(?:dep[oó]sito|transferencia|tasa de activaci[oó]n|multa|criptomonedas?|bitcoin)\\b"
+    ],
+    "I7": [
+      "[\\w.+-]+@[\\w.-]+\\.[a-z]{2,}",
+      "\\bReply-To\\b"
+    ],
+    "I11": [
+      "\\b(?:c[oó]digo|escanee|escanear)\\s+QR\\b",
+      "\\bQR\\b"
+    ]
+  },
+  "regex": {
+    "url": "https?://[^\\s<>\\\"'()[\\]]+",
+    "enlace_html": "<a\\b[^>]*href\\s*=\\s*[\"']([^\"']+)[\"'][^>]*>(.*?)</a\\s*>",
+    "banderas": "i"
+  },
+  "indicios": [
+    {
+      "codigo": "I1",
+      "nombre": "Urgencia artificial",
+      "descripcion": "Plazos artificialmente cortos o presión para actuar de inmediato."
+    },
+    {
+      "codigo": "I2",
+      "nombre": "Enlace a dominio no oficial",
+      "descripcion": "Alguna URL apunta a un dominio que no está en la lista permitida."
+    },
+    {
+      "codigo": "I3",
+      "nombre": "Solicitud de credenciales, claves, códigos o tarjeta",
+      "descripcion": "El mensaje pide credenciales, claves, códigos o datos de tarjeta."
+    },
+    {
+      "codigo": "I4",
+      "nombre": "Enlace acortado u oculto",
+      "descripcion": "La URL usa un acortador o el texto visible oculta su destino."
+    },
+    {
+      "codigo": "I5",
+      "nombre": "Adjunto o instalación sospechosa",
+      "descripcion": "Adjunto con extensión riesgosa o solicitud de instalar software."
+    },
+    {
+      "codigo": "I6",
+      "nombre": "Premio, bono o reembolso inesperado",
+      "descripcion": "Premio, bono, devolución o reembolso inesperado."
+    },
+    {
+      "codigo": "I7",
+      "nombre": "Remitente no oficial",
+      "descripcion": "Remitente de correo gratuito, dominio IESS parecido o Reply-To distinto."
+    },
+    {
+      "codigo": "I8",
+      "nombre": "Amenaza o pérdida de beneficio",
+      "descripcion": "Amenaza de suspensión, bloqueo, multa, embargo o pérdida de beneficios."
+    },
+    {
+      "codigo": "I9",
+      "nombre": "Solicitud de datos personales o documentos",
+      "descripcion": "Solicitud de cédula, documentos u otros datos personales."
+    },
+    {
+      "codigo": "I10",
+      "nombre": "Solicitud de pago o transferencia",
+      "descripcion": "Solicitud de pago, depósito, transferencia o criptomonedas."
+    },
+    {
+      "codigo": "I11",
+      "nombre": "Código QR hacia sitio no verificable",
+      "descripcion": "Mención de QR junto con un destino no permitido."
+    }
+  ],
+  "canales_oficiales": {
+    "portal": "www.iess.gob.ec",
+    "app_afiliado": "app.iess.gob.ec",
+    "denuncias": [
+      "denuncias.iess.gob.ec",
+      "gestiondenuncias@iess.gob.ec"
+    ],
+    "whatsapp": "+593 9 62532338",
+    "atencion_telefonica": "02 3945666",
+    "atencion_correo": "atencionalusuario@iess.gob.ec",
+    "seguridad_informacion": "seguridad.informacion@iess.gob.ec"
+  }
+}
