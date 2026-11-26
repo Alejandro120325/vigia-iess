@@ -25,6 +25,21 @@
     document.getElementById('estadoAnalisis').textContent = texto;
   }
 
+
+
+  function esperar(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  }
+
+  async function animarProgreso(desde, hasta, duracion, texto) {
+    const pasos = Math.max(1, Math.ceil(duracion / 65));
+    for (let paso = 1; paso <= pasos; paso++) {
+      const valor = Math.round(desde + (hasta - desde) * (paso / pasos));
+      actualizarProgreso(valor, texto);
+      await esperar(duracion / pasos);
+    }
+  }
+
   function agregarElemento(lista, titulo, detalle) {
     const li = document.createElement('li');
     const strong = document.createElement('strong');
@@ -116,15 +131,14 @@
     boton.textContent = 'Analizando…';
     const lista = document.getElementById('listaComprobaciones');
     lista.textContent = '';
-    agregarElemento(lista, 'Integridad del correo', 'Verificando la firma HMAC generada durante la lectura.');
-    actualizarProgreso(20, 'Verificando la integridad del contenido…');
+    agregarElemento(lista, 'Integridad del correo', 'Leyendo el contenido y verificando la firma HMAC.');
+    actualizarProgreso(0, 'Preparando la revisión segura…');
 
     try {
-      await new Promise(function (resolve) { requestAnimationFrame(resolve); });
-      actualizarProgreso(45, 'Ejecutando reglas determinísticas de seguridad I1–I11…');
+      await animarProgreso(0, 28, 850, 'Leyendo el correo y comprobando su integridad…');
       const respuesta = await window.VigiaAPI.analizarCorreo(correo);
       agregarElemento(lista, 'Reglas I1–I11', respuesta.resultado.total_indicios + ' indicio(s) detectado(s).');
-      actualizarProgreso(80, 'Consultando disponibilidad y resultado del modelo de IA…');
+      await animarProgreso(28, 72, 1150, 'Revisando enlaces, urgencia y solicitudes de datos…');
 
       const motor = respuesta.resultado.modelo || {};
       const estadoModelo = motor.modelo_ml_disponible
@@ -135,6 +149,7 @@
         ? 'El correo recibido conserva la firma de integridad válida.'
         : 'No se confirmó una firma de integridad.');
 
+      await animarProgreso(72, 96, 650, 'Preparando el resultado y las recomendaciones…');
       mostrarResultado(respuesta.resultado);
       actualizarProgreso(100, 'Análisis completado.');
       mostrarVentana(4);
