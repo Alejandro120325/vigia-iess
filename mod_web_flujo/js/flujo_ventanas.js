@@ -135,10 +135,12 @@
     actualizarProgreso(0, 'Preparando la revisión segura…');
 
     try {
-      await animarProgreso(0, 28, 850, 'Leyendo el correo y comprobando su integridad…');
-      const respuesta = await window.VigiaAPI.analizarCorreo(correo);
+      const solicitudAnalisis = window.VigiaAPI.analizarCorreo(correo);
+      await animarProgreso(0, 22, 700, 'Leyendo el correo y comprobando su integridad…');
+      await animarProgreso(22, 48, 850, 'Revisando el remitente, el asunto y el contenido…');
+      await animarProgreso(48, 72, 900, 'Analizando enlaces, urgencia y solicitudes de datos…');
+      const respuesta = await solicitudAnalisis;
       agregarElemento(lista, 'Reglas I1–I11', respuesta.resultado.total_indicios + ' indicio(s) detectado(s).');
-      await animarProgreso(28, 72, 1150, 'Revisando enlaces, urgencia y solicitudes de datos…');
 
       const motor = respuesta.resultado.modelo || {};
       const estadoModelo = motor.modelo_ml_disponible
@@ -149,7 +151,7 @@
         ? 'El correo recibido conserva la firma de integridad válida.'
         : 'No se confirmó una firma de integridad.');
 
-      await animarProgreso(72, 96, 650, 'Preparando el resultado y las recomendaciones…');
+      await animarProgreso(72, 96, 550, 'Preparando el resultado y las recomendaciones…');
       mostrarResultado(respuesta.resultado);
       actualizarProgreso(100, 'Análisis completado.');
       mostrarVentana(4);
