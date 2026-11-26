@@ -2,8 +2,8 @@
   'use strict';
 
   var MIN = 90, MAX = 150, PASO = 10, DEFECTO = 100;
-  var CLAVE_ZOOM = 'vigia_zoom', CLAVE_CONTRASTE = 'vigia_contraste';
-  var zoom = DEFECTO, barra, nivelEl, btnMenos, btnMas, btnContraste, anuncio;
+  var CLAVE_ZOOM = 'vigia_zoom', CLAVE_CONTRASTE = 'vigia_contraste', CLAVE_TEMA = 'vigia_tema';
+  var zoom = DEFECTO, barra, nivelEl, btnMenos, btnMas, btnContraste, btnTema, anuncio;
 
   function leer(clave, def) {
     try { var v = localStorage.getItem(clave); return v === null ? def : v; }
@@ -31,7 +31,7 @@
     if (anunciar) anuncio.textContent = activo ? 'Alto contraste activado' : 'Alto contraste desactivado';
   }
 
-  function boton(texto, etiqueta) {
+  function aplicarTema(oscuro, anunciar) {\n    document.documentElement.classList.toggle('tema-oscuro', oscuro);\n    btnTema.textContent = oscuro ? '☀ Tema claro' : '☾ Tema oscuro';\n    btnTema.setAttribute('aria-pressed', String(oscuro));\n    guardar(CLAVE_TEMA, oscuro ? '1' : '0');\n    if (anunciar) anuncio.textContent = oscuro ? 'Tema oscuro activado' : 'Tema claro activado';\n  }\n\n  function boton(texto, etiqueta) {
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'vg-btn';
@@ -61,7 +61,7 @@
     btnMas = boton('+', 'Hacer el texto más grande');
     var btnReset = boton('100%', 'Volver al tamaño normal');
     btnContraste = boton('◐ Contraste', 'Activar o desactivar alto contraste');
-    btnContraste.setAttribute('aria-pressed', 'false');
+    btnContraste.setAttribute('aria-pressed', 'false');\n    btnTema = boton('☾ Tema oscuro', 'Activar o desactivar el tema oscuro');\n    btnTema.addEventListener('click', function () { aplicarTema(!document.documentElement.classList.contains('tema-oscuro'), true); });
 
     btnMenos.addEventListener('click', function () { aplicarZoom(zoom - PASO, true); });
     btnMas.addEventListener('click', function () { aplicarZoom(zoom + PASO, true); });
@@ -75,7 +75,7 @@
     anuncio.setAttribute('aria-live', 'polite');
     anuncio.style.cssText = 'position:absolute;left:-9999px;';
 
-    [btnMenos, nivelEl, btnMas, btnReset, btnContraste].forEach(function (el) { grupo.appendChild(el); });
+    [btnMenos, nivelEl, btnMas, btnReset, btnTema, btnContraste].forEach(function (el) { grupo.appendChild(el); });
     barra.appendChild(titulo);
     barra.appendChild(grupo);
     barra.appendChild(anuncio);
@@ -87,7 +87,7 @@
     construir();
     var guardado = parseInt(leer(CLAVE_ZOOM, DEFECTO), 10);
     aplicarZoom(isNaN(guardado) ? DEFECTO : guardado, false);
-    aplicarContraste(leer(CLAVE_CONTRASTE, '0') === '1', false);
+    aplicarContraste(leer(CLAVE_CONTRASTE, '0') === '1', false);\n    aplicarTema(leer(CLAVE_TEMA, '0') === '1', false);
   }
 
   window.VigiaZoom = {
