@@ -1,192 +1,209 @@
+/* Navegación y resultados de la aplicación integrada. */
+(function () {
+  'use strict';
 
-/* =================================
-NAVEGACIÓN DE LAS CUATRO VENTANAS
-================================= */
+  let analisisEnCurso = false;
 
-function mostrarVentana(numero) {
+  function mostrarVentana(numero) {
+    if (!Number.isInteger(numero) || numero < 1 || numero > 4) return;
+    document.querySelectorAll('main .paso').forEach(function (ventana) {
+      ventana.classList.toggle('ventana-activa', ventana.id === 'ventana' + numero);
+      ventana.classList.toggle('ventana-oculta', ventana.id !== 'ventana' + numero);
+    });
+    document.querySelectorAll('[data-ir-paso]').forEach(function (boton) {
+      const activo = Number(boton.dataset.irPaso) === numero;
+      boton.classList.toggle('paso-activo', activo);
+      if (activo) boton.setAttribute('aria-current', 'step');
+      else boton.removeAttribute('aria-current');
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-    // Comprobar que el número sea válido
-    if (numero < 1 || numero > 4) {
-        return;
+  function actualizarProgreso(valor, texto) {
+    document.getElementById('barraProgreso').value = valor;
+    document.getElementById('porcentajeProgreso').textContent = valor + ' %';
+    document.getElementById('estadoAnalisis').textContent = texto;
+  }
+
+  function agregarElemento(lista, titulo, detalle) {
+    const li = document.createElement('li');
+    const strong = document.createElement('strong');
+    strong.textContent = titulo;
+    li.appendChild(strong);
+    if (detalle) {
+      const p = document.createElement('p');
+      p.textContent = detalle;
+      li.appendChild(p);
+    }
+    lista.appendChild(li);
+  }
+
+  function mostrarCanales(canales) {
+    const lista = document.getElementById('listaCanales');
+    lista.textContent = '';
+    const entradas = Object.entries(canales || {});
+    if (entradas.length === 0) {
+      agregarElemento(lista, 'Canales no disponibles', 'Consulte el portal institucional escribiendo la dirección directamente en el navegador.');
+      return;
+    }
+    entradas.forEach(function (par) {
+      const valor = Array.isArray(par[1]) ? par[1].join(' / ') : String(par[1]);
+      agregarElemento(lista, par[0].replaceAll('_', ' '), valor);
+    });
+  }
+
+  function mostrarResultado(resultado) {
+    const panel = document.getElementById('veredictoPanel');
+    const lista = document.getElementById('indicadoresEncontrados');
+    lista.textContent = '';
+
+    const esPhishing = resultado.es_phishing === true;
+    panel.classList.toggle('veredicto--alerta', esPhishing);
+    panel.classList.toggle('veredicto--limpio', !esPhishing);
+
+    document.getElementById('resultadoAnalisis').textContent =
+      esPhishing ? 'Se detectaron señales de posible phishing' : 'No se detectaron indicios determinísticos';
+    document.getElementById('resumenAnalisis').textContent =
+      resultado.regla_negocio || resultado.guion_avatar ||
+      'El resultado se basa en los indicios detectados por el motor local.';
+
+    if (resultado.indicios && resultado.indicios.length) {
+      resultado.indicios.forEach(function (indicio) {
+        const detalle = (indicio.explicacion || '') +
+          (indicio.evidencia ? ' Evidencia: ' + indicio.evidencia : '') +
+          (indicio.consejo ? ' Recomendación: ' + indicio.consejo : '');
+        agregarElemento(lista, (indicio.codigo || '') + ' · ' + (indicio.nombre || 'Indicio'), detalle);
+      });
+    } else {
+      agregarElemento(lista, 'Sin coincidencias en las reglas I1–I11', 'Esto no garantiza que el mensaje sea legítimo. Revise el remitente y verifique cualquier solicitud por un canal oficial.');
     }
 
-    // Obtener todas las ventanas
-    const ventanas = document.querySelectorAll("main section");
+    const probabilidad = resultado.probabilidad_ml;
+    document.getElementById('probabilidadML').textContent =
+      typeof probabilidad === 'number'
+        ? probabilidad.toFixed(1) + ' % de probabilidad estimada por el clasificador'
+        : 'No disponible: el clasificador ONNX no pudo producir una estimación.';
+    document.getElementById('notaML').textContent =
+      resultado.probabilidad_ml_nota ||
+      'La estimación ML es complementaria y no sustituye las reglas de seguridad.';
+    document.getElementById('recomendacionesAnalisis').textContent =
+      resultado.guion_avatar ||
+      (esPhishing
+        ? 'No abra enlaces ni adjuntos. No comparta claves ni datos personales. Verifique por los canales oficiales.'
+        : 'Mantenga la precaución. La ausencia de indicios no demuestra que el mensaje sea auténtico.');
+    mostrarCanales(resultado.canales_oficiales);
 
-    // Ocultar todas las ventanas
-    ventanas.forEach(function(ventana) {
-        ventana.classList.remove("ventana-activa");
-        ventana.classList.add("ventana-oculta");
-    });
+    if (window.VigiaAvatar && typeof window.VigiaAvatar.explicar === 'function') {
+      window.VigiaAvatar.explicar({
+        es_phishing: esPhishing,
+        indicios: resultado.indicios || []
+      });
+    }
+  }
 
-    // Mostrar la ventana seleccionada
-    const ventanaSeleccionada = document.getElementById("ventana" + numero);
-
-    ventanaSeleccionada.classList.remove("ventana-oculta");
-    ventanaSeleccionada.classList.add("ventana-activa");
-
-    // Actualizar el botón seleccionado
-    const botones = document.querySelectorAll("nav button");
-
-    botones.forEach(function(boton, indice) {
-
-        boton.classList.remove("paso-activo");
-
-        if (indice + 1 === numero) {
-            boton.classList.add("paso-activo");
-        }
-
-    });
-
-}
-
-
-/* =================================
-ANÁLISIS DE SEGURIDAD DEL CORREO
-================================= */
-
-let analisisEnCurso = false;
-
-async function analizarCorreo() {
-
-    // Evitar iniciar dos análisis al mismo tiempo
-    if (analisisEnCurso) {
-        return;
+  async function analizarCorreo() {
+    if (analisisEnCurso) return;
+    const correo = window.correoVigiaActual;
+    if (!correo) {
+      document.getElementById('estadoAnalisis').textContent = 'Primero debe cargar y leer un correo en el paso 1.';
+      mostrarVentana(1);
+      return;
     }
 
     analisisEnCurso = true;
-
-    // Obtener el contenido del correo
-    const correo = document.getElementById("contenidoCorreo").textContent.toLowerCase();
-
-    // Obtener elementos de la pantalla
-    const barra = document.getElementById("barraProgreso");
-    const porcentaje = document.getElementById("porcentajeProgreso");
-    const estado = document.getElementById("estadoAnalisis");
-    const lista = document.getElementById("listaComprobaciones");
-
-    // Reiniciar el análisis
-    barra.value = 0;
-    porcentaje.textContent = "0 %";
-    lista.textContent = "";
-
-    const indicadores = [];
-
-    // Definir las comprobaciones
-    const comprobaciones = [
-        {
-            nombre: "Enlaces externos",
-            buscar: /https?:\/\/|www\./i,
-            mensaje: "Se encontraron enlaces externos."
-        },
-        {
-            nombre: "Mensajes de urgencia",
-            buscar: /\b(urgente|inmediatamente|última oportunidad|ultimo aviso|hoy mismo)\b/i,
-            mensaje: "Se encontraron expresiones de urgencia."
-        },
-        {
-            nombre: "Solicitudes de contraseñas",
-            buscar: /\b(contraseña|contrasena|clave|password|credenciales)\b/i,
-            mensaje: "Se encontraron referencias a contraseñas o credenciales."
-        }
-    ];
+    const boton = document.getElementById('btnAnalizar');
+    boton.disabled = true;
+    boton.textContent = 'Analizando…';
+    const lista = document.getElementById('listaComprobaciones');
+    lista.textContent = '';
+    agregarElemento(lista, 'Integridad del correo', 'Verificando la firma HMAC generada durante la lectura.');
+    actualizarProgreso(20, 'Verificando la integridad del contenido…');
 
     try {
+      await new Promise(function (resolve) { requestAnimationFrame(resolve); });
+      actualizarProgreso(45, 'Ejecutando reglas determinísticas de seguridad I1–I11…');
+      const respuesta = await window.VigiaAPI.analizarCorreo(correo);
+      agregarElemento(lista, 'Reglas I1–I11', respuesta.resultado.total_indicios + ' indicio(s) detectado(s).');
+      actualizarProgreso(80, 'Consultando disponibilidad y resultado del modelo de IA…');
 
-        // Ejecutar las tres comprobaciones
-        for (let i = 0; i < comprobaciones.length; i++) {
+      const motor = respuesta.resultado.modelo || {};
+      const estadoModelo = motor.modelo_ml_disponible
+        ? 'Clasificador ONNX disponible.'
+        : 'Clasificador ONNX no disponible; el dictamen por reglas sigue activo.';
+      agregarElemento(lista, 'Modelo de aprendizaje automático', estadoModelo);
+      agregarElemento(lista, 'Auditoría de integridad', respuesta.resultado.integridad_paso1_verificada
+        ? 'El correo recibido conserva la firma de integridad válida.'
+        : 'No se confirmó una firma de integridad.');
 
-            const comprobacion = comprobaciones[i];
-
-            estado.textContent = "Revisando: " + comprobacion.nombre + "...";
-
-            // Simular el tiempo de revisión
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            const encontrado = comprobacion.buscar.test(correo);
-
-            // Crear el resultado de la comprobación
-            const elemento = document.createElement("li");
-
-            elemento.textContent = encontrado
-                ? comprobacion.nombre + ": señal encontrada"
-                : comprobacion.nombre + ": sin coincidencias";
-
-            lista.appendChild(elemento);
-
-            // Guardar los indicadores encontrados
-            if (encontrado) {
-                indicadores.push(comprobacion.mensaje);
-            }
-
-            // Actualizar el progreso
-            const avance = Math.round(((i + 1) / comprobaciones.length) * 100);
-
-            barra.value = avance;
-            porcentaje.textContent = avance + " %";
-        }
-
-        estado.textContent = "Comprobaciones finalizadas.";
-
-        // Preparar el veredicto
-        mostrarVeredicto(indicadores);
-
-        // Mostrar la cuarta ventana
-        mostrarVentana(4);
-
+      mostrarResultado(respuesta.resultado);
+      actualizarProgreso(100, 'Análisis completado.');
+      mostrarVentana(4);
     } catch (error) {
-
-        console.error("Error durante el análisis:", error);
-
-        estado.textContent = "No se pudo completar el análisis.";
-
-        alert("Ocurrió un error durante las comprobaciones.");
-
+      actualizarProgreso(0, 'No se pudo completar el análisis: ' + error.message);
     } finally {
-
-        analisisEnCurso = false;
+      analisisEnCurso = false;
+      boton.disabled = false;
+      boton.textContent = 'Iniciar análisis real';
     }
-}
+  }
 
+  async function ejecutarAuditoriaPractica() {
+    const boton = document.getElementById('btnAuditoria');
+    const estado = document.getElementById('estadoAuditoria');
+    const contenedor = document.getElementById('resultadosAuditoria');
+    boton.disabled = true;
+    estado.textContent = 'Procesando los cinco correos de ejemplo…';
+    contenedor.textContent = '';
 
-// Mostrar el resultado de las comprobaciones
-function mostrarVeredicto(indicadores) {
+    try {
+      const datos = await window.VigiaAPI.auditoriaPractica();
+      const tabla = document.createElement('table');
+      tabla.className = 'tabla-auditoria';
+      const thead = document.createElement('thead');
+      const filaCabecera = document.createElement('tr');
+      ['Archivo', 'Remitente', 'Veredicto', 'Indicios', 'SHA-256'].forEach(function (titulo) {
+        const th = document.createElement('th');
+        th.textContent = titulo;
+        filaCabecera.appendChild(th);
+      });
+      thead.appendChild(filaCabecera);
+      tabla.appendChild(thead);
 
-    const resultado = document.getElementById("resultadoAnalisis");
-    const listaIndicadores = document.getElementById("indicadoresEncontrados");
-    const recomendaciones = document.getElementById("recomendacionesAnalisis");
-
-    // Limpiar los resultados anteriores
-    listaIndicadores.textContent = "";
-
-    if (indicadores.length > 0) {
-
-        resultado.textContent = "Se encontraron señales que requieren revisión.";
-
-        indicadores.forEach(function(indicador) {
-
-            const elemento = document.createElement("li");
-
-            elemento.textContent = indicador;
-
-            listaIndicadores.appendChild(elemento);
+      const tbody = document.createElement('tbody');
+      (datos.resultados || []).forEach(function (resultado) {
+        const fila = document.createElement('tr');
+        [
+          resultado.archivo,
+          resultado.remitente,
+          resultado.veredicto,
+          (resultado.indicios || []).join(', ') || 'Ninguno',
+          resultado.huella_sha256
+        ].forEach(function (valor) {
+          const td = document.createElement('td');
+          td.textContent = String(valor || '—');
+          fila.appendChild(td);
         });
+        tbody.appendChild(fila);
+      });
+      tabla.appendChild(tbody);
+      contenedor.appendChild(tabla);
 
-        recomendaciones.textContent =
-            "No abras enlaces ni compartas contraseñas o información personal. Verifica el remitente por un canal oficial.";
-
-    } else {
-
-        resultado.textContent = "No se encontraron señales en estas comprobaciones.";
-
-        const elemento = document.createElement("li");
-
-        elemento.textContent = "No se detectaron coincidencias con los indicadores revisados.";
-
-        listaIndicadores.appendChild(elemento);
-
-        recomendaciones.textContent =
-            "Mantén las precauciones. La ausencia de estas señales no garantiza que el correo sea seguro.";
+      estado.textContent = 'Auditoría finalizada: ' + datos.total_probados + ' de ' + datos.total_esperados + ' archivos procesados.';
+      if (datos.errores && datos.errores.length) {
+        const p = document.createElement('p');
+        p.textContent = 'Archivos con errores: ' + datos.errores.map(function (e) {
+          return e.archivo + ' (' + e.error + ')';
+        }).join('; ');
+        contenedor.appendChild(p);
+      }
+    } catch (error) {
+      estado.textContent = error.message;
+    } finally {
+      boton.disabled = false;
     }
-}
+  }
 
+  window.mostrarVentana = mostrarVentana;
+  window.analizarCorreo = analizarCorreo;
+  window.ejecutarAuditoriaPractica = ejecutarAuditoriaPractica;
+})();
