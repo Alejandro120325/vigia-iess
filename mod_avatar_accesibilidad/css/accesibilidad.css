@@ -357,7 +357,6 @@ html.tema-oscuro .vg-cc__op {
 
 
 /* Demo sin iconos decorativos: controles de accesibilidad y pasos solo con texto. */
-.vg-av__fig,
 .vg-sem__luces,
 .vg-cc__ico { display: none !important; }
 .vg-av__semaforo { display: block; }
