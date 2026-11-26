@@ -1,0 +1,78 @@
+{
+  "fecha_entrenamiento_utc": "2026-11-26T19:20:54.734918+00:00",
+  "dataset": "dataset_entrenamiento_IESS_1000.csv",
+  "dataset_sha256": "f72922a3310b7d78ae175cb2d090b633715da4bec4e0ba586f154665382becfd",
+  "registros": 1000,
+  "registros_entrenamiento": 800,
+  "registros_prueba": 200,
+  "regla_negocio_validada_en_dataset": true,
+  "metricas_indicios": {
+    "I1": {
+      "precision": 0.575,
+      "recall": 0.9583,
+      "f1": 0.7188,
+      "soporte_positivo_test": 48
+    },
+    "I2": {
+      "precision": 0.9663,
+      "recall": 1.0,
+      "f1": 0.9829,
+      "soporte_positivo_test": 86
+    },
+    "I3": {
+      "precision": 0.7381,
+      "recall": 0.9688,
+      "f1": 0.8378,
+      "soporte_positivo_test": 32
+    },
+    "I4": {
+      "precision": 0.4062,
+      "recall": 0.6842,
+      "f1": 0.5098,
+      "soporte_positivo_test": 19
+    },
+    "I5": {
+      "precision": 0.75,
+      "recall": 0.8824,
+      "f1": 0.8108,
+      "soporte_positivo_test": 17
+    },
+    "I6": {
+      "precision": 0.9412,
+      "recall": 0.9412,
+      "f1": 0.9412,
+      "soporte_positivo_test": 17
+    },
+    "I7": {
+      "precision": 0.93,
+      "recall": 1.0,
+      "f1": 0.9637,
+      "soporte_positivo_test": 93
+    },
+    "I8": {
+      "precision": 0.7742,
+      "recall": 0.9796,
+      "f1": 0.8649,
+      "soporte_positivo_test": 49
+    },
+    "I9": {
+      "precision": 0.766,
+      "recall": 0.973,
+      "f1": 0.8571,
+      "soporte_positivo_test": 37
+    },
+    "I10": {
+      "precision": 0.6875,
+      "recall": 0.88,
+      "f1": 0.7719,
+      "soporte_positivo_test": 25
+    },
+    "I11": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "soporte_positivo_test": 3
+    }
+  },
+  "clasificador_phishing": "LogisticRegression + TF-IDF; probabilidades no calibradas"
+}
