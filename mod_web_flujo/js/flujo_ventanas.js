@@ -135,11 +135,16 @@
     actualizarProgreso(0, 'Preparando la revisión segura…');
 
     try {
-      const solicitudAnalisis = window.VigiaAPI.analizarCorreo(correo);
+      const solicitudAnalisis = window.VigiaAPI.analizarCorreo(correo).then(
+        function (respuesta) { return { correcto: true, respuesta: respuesta }; },
+        function (error) { return { correcto: false, error: error }; }
+      );
       await animarProgreso(0, 22, 700, 'Leyendo el correo y comprobando su integridad…');
       await animarProgreso(22, 48, 850, 'Revisando el remitente, el asunto y el contenido…');
       await animarProgreso(48, 72, 900, 'Analizando enlaces, urgencia y solicitudes de datos…');
-      const respuesta = await solicitudAnalisis;
+      const estadoSolicitud = await solicitudAnalisis;
+      if (!estadoSolicitud.correcto) throw estadoSolicitud.error;
+      const respuesta = estadoSolicitud.respuesta;
       agregarElemento(lista, 'Reglas I1–I11', respuesta.resultado.total_indicios + ' indicio(s) detectado(s).');
 
       const motor = respuesta.resultado.modelo || {};
