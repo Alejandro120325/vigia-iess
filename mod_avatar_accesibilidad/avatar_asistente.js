@@ -177,8 +177,48 @@
 
   /* ---------- Voz y subtítulos ---------- */
   function decir(texto) {
+    if (sub) sub.textContent = texto;
     if (window.VigiaVoz && 'speechSynthesis' in window) window.VigiaVoz.hablar(texto);
-    else sub.textContent = texto;
+  }
+
+  function explicarAnalisis(resultado) {
+    var datos = resultado || {};
+    ultimo = normalizar(datos);
+    totalFallos = ultimo.indicios.length;
+    erroresDetectados = 0;
+    pasoActual = 0;
+    if (tarjeta) {
+      tarjeta.classList.toggle('vg-av--alerta', ultimo.es);
+      tarjeta.classList.toggle('vg-av--ok', !ultimo.es);
+    }
+    if (veredicto) {
+      veredicto.hidden = false;
+      veredicto.textContent = ultimo.es
+        ? 'Posible phishing: ' + totalFallos + ' indicio(s) determinístico(s) detectado(s).'
+        : 'No se detectaron indicios determinísticos. Esto no garantiza legitimidad.';
+    }
+    if (semTxt) semTxt.textContent = ultimo.es
+      ? 'Nivel de riesgo alto: el motor detectó ' + totalFallos + ' indicio(s).'
+      : 'Nivel de riesgo bajo según reglas: no se detectaron indicios.';
+    if (claseBox) {
+      claseBox.textContent = '';
+      claseBox.appendChild(el('h3', '', 'Explicación del análisis real'));
+      if (ultimo.indicios.length) {
+        ultimo.indicios.forEach(function (item, index) {
+          var titulo = (item.codigo ? item.codigo + ': ' : '') + item.nombre;
+          claseBox.appendChild(el('h4', '', (index + 1) + '. ' + titulo));
+          if (item.explicacion) claseBox.appendChild(el('p', '', item.explicacion));
+          if (item.evidencia) claseBox.appendChild(el('p', '', 'Evidencia: ' + item.evidencia));
+          if (item.consejo) claseBox.appendChild(el('p', '', 'Recomendación: ' + item.consejo));
+        });
+      } else {
+        claseBox.appendChild(el('p', '', 'No se encontraron coincidencias en las reglas determinísticas I1–I11. La ausencia de coincidencias no demuestra que el correo sea legítimo.'));
+      }
+    }
+    var resumen = ultimo.es
+      ? 'El motor detectó señales de posible phishing. No pulse enlaces ni abra adjuntos y compruebe el mensaje por canales oficiales.'
+      : 'No se detectaron indicios determinísticos de phishing. Mantenga la precaución y verifique cualquier solicitud sensible por un canal independiente.';
+    decir(resumen);
   }
 
   function saludar() {
@@ -418,7 +458,7 @@
   }
 
   window.VigiaAvatar = {
-    explicar: explicar,
+    explicar: explicar,\n    explicarAnalisis: explicarAnalisis,
     decir: decir,
     saludar: saludar,
     configurar: configurar
