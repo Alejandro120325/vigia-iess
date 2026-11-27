@@ -458,7 +458,8 @@
   }
 
   window.VigiaAvatar = {
-    explicar: explicar,\n    explicarAnalisis: explicarAnalisis,
+    explicar: explicar,
+    explicarAnalisis: explicarAnalisis,
     decir: decir,
     saludar: saludar,
     configurar: configurar
