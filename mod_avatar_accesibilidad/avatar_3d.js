@@ -55,6 +55,7 @@
 
   function iniciar() {
     var host = document.getElementById('vg-avatar-3d');
+    if (host) host.parentElement.style.display = 'block';
     if (!host) return;
     if (!window.THREE || !THREE.GLTFLoader) {
       host.textContent = 'Modelo 3D no disponible en esta sesión. El asistente conserva voz y subtítulos.';
