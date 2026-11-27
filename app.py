@@ -57,7 +57,7 @@ def cabeceras_seguridad(response):
     response.headers.setdefault("Referrer-Policy", "no-referrer")
     response.headers.setdefault(
         "Content-Security-Policy",
-        "default-src 'self'; script-src 'self' 'unsafe-inline'; "
+        "default-src 'self'; script-src 'self' 'unsafe-inline' https://ajax.googleapis.com; "
         "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
         "font-src 'self' data:; connect-src 'self'; object-src 'none'; "
         "base-uri 'self'; frame-ancestors 'none'",
