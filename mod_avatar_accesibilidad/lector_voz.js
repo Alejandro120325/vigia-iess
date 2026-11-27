@@ -75,10 +75,10 @@
   }
 
   function hablar(texto) {
-    if (!soportado) { avisarNoSoportado(); return; }
+    if (!soportado) { avisarNoSoportado(); emitir('vigia:voz-fin'); return; }
     detener(true);
     cola = partir(texto);
-    if (!cola.length) return;
+    if (!cola.length) { emitir('vigia:voz-fin'); return; }
     token++; indice = 0; hablando = true; pausado = false;
     actualizarBotones();
     emitir('vigia:voz-inicio');
