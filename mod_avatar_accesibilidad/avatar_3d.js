@@ -34,7 +34,7 @@
   function mostrarEstado(texto) {
     estado = texto || 'reposo';
     if (!mixer || !accion) {
-      emitir('vigia:avatar-estado', { estado: estado });
+      emitir('vigia:avatar-estado', { estado: estado });\n    var textoEstado = document.getElementById('vg-avatar-estado');\n    if (textoEstado) textoEstado.textContent = estado === 'hablando' ? 'Vigía está hablando.' : estado === 'alerta' ? 'Vigía detectó señales sospechosas.' : estado === 'acierto' ? 'No se encontraron indicios determinísticos.' : estado === 'analizando' ? 'Vigía está revisando el correo.' : 'Vigía está listo.'
       return;
     }
     if (estado === 'alerta' || estado === 'error') {
@@ -57,7 +57,7 @@
     var host = document.getElementById('vg-avatar-3d');
     if (!host) return;
     if (!window.THREE || !THREE.GLTFLoader) {
-      host.textContent = 'No se pudo cargar el visor 3D. La explicación por voz sigue disponible.';
+      host.textContent = 'Modelo 3D no disponible en esta sesión. El asistente conserva voz y subtítulos.';
       emitir('vigia:avatar-error', { mensaje: 'Three.js GLTFLoader no está disponible.' });
       return;
     }
@@ -84,7 +84,7 @@
     var loader = new THREE.GLTFLoader();
     loader.load('/accesibilidad/models/panteraups.glb', function (gltf) {
       modelo = gltf.scene;
-      modelo.scale.setScalar(0.01);
+      var caja = new THREE.Box3().setFromObject(modelo);\n      var tamano = caja.getSize(new THREE.Vector3());\n      var centro = caja.getCenter(new THREE.Vector3());\n      var escala = 2.25 / Math.max(tamano.x, tamano.y, tamano.z, 0.001);\n      modelo.scale.setScalar(escala);\n      modelo.position.sub(centro.multiplyScalar(escala));
       modelo.position.set(0, -1.0, 0);
       escena.add(modelo);
       if (gltf.animations && gltf.animations.length) {
@@ -94,11 +94,11 @@
         accion.setLoop(THREE.LoopRepeat);
         accion.play();
       }
-      cargado = true;
+      cargado = true;\n      var etiqueta = document.getElementById('vg-avatar-estado');\n      if (etiqueta) etiqueta.textContent = 'Modelo 3D cargado. Animación disponible: ' + ((gltf.animations && gltf.animations[0] && gltf.animations[0].name) || 'sin nombre');
       mostrarEstado(estado);
       emitir('vigia:avatar-listo', { animaciones: (gltf.animations || []).map(function (a) { return a.name; }) });
     }, undefined, function (error) {
-      host.textContent = 'No se pudo cargar el modelo 3D. Vigía continuará con voz y subtítulos.';
+      host.textContent = 'No se pudo cargar el archivo 3D. Vigía continuará con voz y subtítulos.';
       emitir('vigia:avatar-error', { mensaje: 'Error al cargar panteraups.glb.' });
       console.error('Error al cargar avatar 3D:', error);
     });
