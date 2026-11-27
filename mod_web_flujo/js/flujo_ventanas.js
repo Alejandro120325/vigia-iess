@@ -67,7 +67,49 @@
     });
   }
 
-  async function narrar(texto) {\n    if (window.VigiaVoz && typeof window.VigiaVoz.hablar === 'function') {\n      window.VigiaVoz.hablar(texto);\n      await new Promise(function (resolve) {\n        var fin = function () { document.removeEventListener('vigia:voz-fin', fin); resolve(); };\n        document.addEventListener('vigia:voz-fin', fin, { once: true });\n      });\n    } else if (window.VigiaAvatar && typeof window.VigiaAvatar.decir === 'function') {\n      window.VigiaAvatar.decir(texto);\n    }\n  }\n\n  async function narrarResultado(resultado) {\n    const indicios = resultado.indicios || [];\n    await narrar('He terminado las comprobaciones del correo. Ahora le explicaré los resultados que sí fueron detectados por las reglas de seguridad.');\n    if (indicios.length) {\n      for (let i = 0; i < indicios.length; i++) {\n        const item = indicios[i];\n        const texto = 'Indicio ' + (i + 1) + ' de ' + indicios.length + '. Código ' + (item.codigo || '') + '. ' + (item.nombre || 'Señal detectada') + '. ' + (item.explicacion || '') + (item.evidencia ? ' Evidencia encontrada: ' + item.evidencia : '') + (item.consejo ? ' Recomendación: ' + item.consejo : '');\n        if (window.VigiaAvatar3D) window.VigiaAvatar3D.estado('alerta');\n        await narrar(texto);\n      }\n    } else {\n      await narrar('No se encontraron indicios determinísticos en las reglas I uno a I once. Esto no demuestra que el remitente sea legítimo; mantenga precaución y verifique por un canal oficial.');\n    }\n    if (typeof resultado.probabilidad_ml === 'number') {\n      await narrar('El clasificador de aprendizaje automático estima una probabilidad de phishing de ' + resultado.probabilidad_ml + ' por ciento. Esta estimación es complementaria y no está calibrada; no reemplaza el dictamen de reglas.');\n    } else {\n      await narrar('El clasificador de aprendizaje automático no devolvió una probabilidad disponible. El resultado se basa en las reglas determinísticas.');\n    }\n    await narrar(resultado.guion_avatar || 'Revise el mensaje desde los canales oficiales del IESS.');\n  }\n\n  function mostrarResultado(resultado) {
+  async function narrar(texto) {\n    if (window.VigiaVoz && typeof window.VigiaVoz.hablar === 'function') {\n      window.VigiaVoz.hablar(texto);\n      await new Promise(function (resolve) {\n        var fin = function () { document.removeEventListener('vigia:voz-fin', fin); resolve(); };\n        document.addEventListener('vigia:voz-fin', fin, { once: true });\n      });\n    } else if (window.VigiaAvatar && typeof window.VigiaAvatar.decir === 'function') {\n      window.VigiaAvatar.decir(texto);\n    }\n  }\n\n  async function narrarResultado(resultado) {\n    const indicios = resultado.indicios || [];\n    await narrar('He terminado las comprobaciones del correo. Ahora le explicaré los resultados que sí fueron detectados por las reglas de seguridad.');\n    if (indicios.length) {\n      for (let i = 0; i < indicios.length; i++) {\n        const item = indicios[i];\n        const texto = 'Indicio ' + (i + 1) + ' de ' + indicios.length + '. Código ' + (item.codigo || '') + '. ' + (item.nombre || 'Señal detectada') + '. ' + (item.explicacion || '') + (item.evidencia ? ' Evidencia encontrada: ' + item.evidencia : '') + (item.consejo ? ' Recomendación: ' + item.consejo : '');\n        if (window.VigiaAvatar3D) window.VigiaAvatar3D.estado('alerta');\n        await narrar(texto);\n      }\n    } else {\n      await narrar('No se encontraron indicios determinísticos en las reglas I uno a I once. Esto no demuestra que el remitente sea legítimo; mantenga precaución y verifique por un canal oficial.');\n    }\n    if (typeof resultado.probabilidad_ml === 'number') {\n      await narrar('El clasificador de aprendizaje automático estima una probabilidad de phishing de ' + resultado.probabilidad_ml + ' por ciento. Esta estimación es complementaria y no está calibrada; no reemplaza el dictamen de reglas.');\n    } else {\n      await narrar('El clasificador de aprendizaje automático no devolvió una probabilidad disponible. El resultado se basa en las reglas determinísticas.');\n    }\n    await narrar(resultado.guion_avatar || 'Revise el mensaje desde los canales oficiales del IESS.');\n  }\n\n  async function narrar(texto) {
+    if (!window.VigiaVoz || typeof window.VigiaVoz.hablar !== 'function') return;
+    await new Promise(function (resolve) {
+      var terminado = false;
+      var finalizar = function () {
+        if (terminado) return;
+        terminado = true;
+        document.removeEventListener('vigia:voz-fin', finalizar);
+        resolve();
+      };
+      document.addEventListener('vigia:voz-fin', finalizar);
+      window.VigiaVoz.hablar(texto);
+      window.setTimeout(finalizar, Math.max(5000, texto.length * 95));
+    });
+  }
+
+  async function narrarResultado(resultado) {
+    const indicios = resultado.indicios || [];
+    await narrar('El análisis ha finalizado. Le explicaré los hallazgos que detectó el motor de seguridad.');
+    if (indicios.length) {
+      for (let i = 0; i < indicios.length; i++) {
+        const item = indicios[i];
+        const texto = 'Indicio ' + (i + 1) + ' de ' + indicios.length + '. Código ' +
+          (item.codigo || '') + '. ' + (item.nombre || 'Señal detectada') + '. ' +
+          (item.explicacion || '') +
+          (item.evidencia ? ' Evidencia encontrada: ' + item.evidencia : '') +
+          (item.consejo ? ' Recomendación: ' + item.consejo : '');
+        if (window.VigiaAvatar3D) window.VigiaAvatar3D.estado('alerta');
+        await narrar(texto);
+      }
+    } else {
+      await narrar('No se encontraron coincidencias determinísticas en las reglas I uno a I once. Esto no garantiza que el correo sea legítimo. Compruebe el remitente por un canal oficial.');
+    }
+    if (typeof resultado.probabilidad_ml === 'number') {
+      await narrar('El clasificador de aprendizaje automático produjo una estimación de ' +
+        resultado.probabilidad_ml + ' por ciento. Esta cifra es complementaria, no está calibrada y no decide por sí sola el veredicto.');
+    } else {
+      await narrar('El clasificador de aprendizaje automático no entregó una estimación disponible. El veredicto se basa en las reglas determinísticas.');
+    }
+    await narrar(resultado.guion_avatar || 'No abra enlaces ni entregue datos personales. Verifique siempre por canales oficiales.');
+  }
+
+  function mostrarResultado(resultado) {
     const panel = document.getElementById('veredictoPanel');
     const lista = document.getElementById('indicadoresEncontrados');
     lista.textContent = '';
@@ -114,6 +156,9 @@
         indicios: resultado.indicios || []
       });
     }
+    document.dispatchEvent(new CustomEvent('vigia:resultado', {
+      detail: { es_phishing: esPhishing }
+    }));
   }
 
   async function analizarCorreo() {
@@ -160,6 +205,7 @@
       mostrarResultado(respuesta.resultado);
       actualizarProgreso(100, 'Análisis completado.');
       mostrarVentana(4);
+      await narrarResultado(respuesta.resultado);
     } catch (error) {
       actualizarProgreso(0, 'No se pudo completar el análisis: ' + error.message);
     } finally {
