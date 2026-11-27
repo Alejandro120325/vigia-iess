@@ -399,3 +399,5 @@ html.alto-contraste .vg-avatar-live__scene { background: #000; border: 3px solid
 #vg-avatar-estado { font-weight: 700; color: #0b2e59; }
 html.tema-oscuro .vg-avatar-live__scene { background: radial-gradient(circle at 50% 38%, #31465d, #142131); }
 html.alto-contraste .vg-avatar-live__scene { background: #000; border: 3px solid #ffe600; }
+
+.vg-avatar-live { display:none; }
