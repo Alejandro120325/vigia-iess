@@ -232,7 +232,7 @@
       mostrarResultado(respuesta.resultado);
       actualizarProgreso(100, 'Análisis completado.');
       mostrarVentana(4);
-      await narrarResultado(respuesta.resultado);
+      // La narración de hallazgos se realiza en el panel Vigía mediante explicarAnalisis().
     } catch (error) {
       actualizarProgreso(0, 'No se pudo completar el análisis: ' + error.message);
     } finally {
