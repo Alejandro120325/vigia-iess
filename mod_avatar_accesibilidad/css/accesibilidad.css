@@ -392,3 +392,10 @@ html.alto-contraste .vg-voz .vg-btn:hover:not(:disabled) {
 html.tema-oscuro .vg-avatar-live__scene { background: radial-gradient(circle at 50% 38%, #31465d, #142131); }
 html.alto-contraste .vg-avatar-live__scene { background: #000; border: 3px solid #ffe600; }
 @media (max-width: 600px) { .vg-avatar-live__scene { height: 280px; } }
+
+.vg-avatar-live { max-width: 46rem; margin: 1.25rem auto; text-align: center; }
+.vg-avatar-live__scene { width: min(100%, 520px); height: 340px; margin: 0 auto; border-radius: 1rem; background: radial-gradient(circle at 50% 38%, #e8f0f8, #c8d7e8); overflow: hidden; }
+.vg-avatar-live__scene canvas, .vg-avatar-live__scene model-viewer { width: 100%; height: 100%; display: block; }
+#vg-avatar-estado { font-weight: 700; color: #0b2e59; }
+html.tema-oscuro .vg-avatar-live__scene { background: radial-gradient(circle at 50% 38%, #31465d, #142131); }
+html.alto-contraste .vg-avatar-live__scene { background: #000; border: 3px solid #ffe600; }
