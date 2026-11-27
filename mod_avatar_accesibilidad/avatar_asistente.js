@@ -64,7 +64,7 @@
     return b;
   }
 
-  /* ---------- Soporte 3D (pantera .glb cuando esté lista) ---------- */
+  /* ---------- Soporte de modelo 3D ---------- */
   function asegurarModelViewer(cb) {
     if (customElements && customElements.get('model-viewer')) { cb(true); return; }
     if (document.getElementById('vg-mv-script')) {
@@ -325,7 +325,7 @@
     figBox.innerHTML = SVG;
     boca = figBox.querySelector('.vg-av__boca');
     pico = figBox.querySelector('.vg-av__pico');
-    nota3D = el('span', 'vg-av__3d-nota', 'Pantera 3D: en preparación');
+    nota3D = el('span', 'vg-av__3d-nota', 'Búho 3D: modelo provisional');
     figBox.appendChild(nota3D);
 
     var info = el('div', 'vg-av__info');
