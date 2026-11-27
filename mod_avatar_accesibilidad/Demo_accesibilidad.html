@@ -1,78 +1,100 @@
 <!DOCTYPE html>
-<html lang="es-EC">
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Demo clase interactiva · VIGÍA-IESS</title>
-  <link rel="stylesheet" href="css/accesibilidad.css">
-  <style>
-    body {
-      font-family: system-ui, "Segoe UI", Arial, sans-serif;
-      font-size: 1.125rem;
-      line-height: 1.6;
-      margin: 0 auto;
-      max-width: 48rem;
-      padding: 1rem;
-      background: #fdfaf3;
-      color: #1a1a1a;
-    }
-    .tarjeta {
-      border: .15rem solid #0b2e59;
-      border-radius: .8rem;
-      padding: 1rem 1.25rem;
-      margin-top: 1rem;
-      background: #fff;
-    }
-    .prueba {
-      min-height: 3rem;
-      margin: .5rem .5rem 0 0;
-      padding: .45rem 1rem;
-      font-size: 1.05rem;
-      font-weight: 700;
-      border: .15rem solid #0b2e59;
-      border-radius: .6rem;
-      background: #fff;
-      color: #0b2e59;
-      cursor: pointer;
-    }
-    .prueba:hover {
-      background: #ffc20e;
-      color: #000;
-    }
-    html.alto-contraste .tarjeta {
-      background: #000;
-      color: #fff;
-      border-color: #ffe600;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vigia IESS</title>
+  <link rel="stylesheet" href="/assets/css/estilos_intitucionales.css" />
+  <link rel="stylesheet" href="/accesibilidad/css/accesibilidad.css" />
 </head>
 <body>
-  <main id="contenido-principal">
-    <h1>Demo: Clase interactiva, semáforo y preguntas</h1>
+  <header>
+    <h1>Vigia IESS</h1>
+    <p>Protege tu información. Identifica correos sospechosos.</p>
+  </header>
 
-    <div class="tarjeta">
-      <p>Pruebe los botones <strong>-</strong>, <strong>+</strong>, <strong>100%</strong> y <strong>Contraste</strong> de la barra superior, y use los controles de voz de abajo.</p>
-    </div>
+  <nav aria-label="Pasos de la demostración">
+    <button type="button" data-ir-paso="1" onclick="mostrarVentana(1)">1. Subir Correo</button>
+    <button type="button" data-ir-paso="2" onclick="mostrarVentana(2)">2. Lectura Segura</button>
+    <button type="button" data-ir-paso="3" onclick="mostrarVentana(3)">3. Análisis en Vivo</button>
+    <button type="button" data-ir-paso="4" onclick="mostrarVentana(4)">4. Veredicto Final</button>
+  </nav>
 
-    <h2>Correo de ejemplo</h2>
-    <div class="tarjeta" id="correo-leido" data-correo>
-      <p><strong>De:</strong> soporte@servicio-falso.example</p>
-      <p><strong>Asunto:</strong> Su cuenta será bloqueada hoy.</p>
-      <p>Estimado afiliado, debe confirmar sus datos de inmediato haciendo clic en el enlace antes de las 17:00 para evitar el bloqueo de su cuenta.</p>
-    </div>
+  <main>
+    <section id="ventana1" class="paso ventana-activa">
+      <h2>Subir Correo</h2>
+      <p>Selecciona el correo de ejemplo que deseas revisar.</p>
+      <div id="correo-leido">
+        <p><strong>De:</strong> soporte@servicio-falso.example</p>
+        <p><strong>Asunto:</strong> Su cuenta será bloqueada hoy.</p>
+        <p>Debe confirmar sus datos haciendo clic en un enlace para evitar el bloqueo de su cuenta.</p>
+      </div>
+      <button type="button" onclick="mostrarVentana(2)">Continuar a Lectura Segura</button>
+    </section>
 
-    <h2>Controles de prueba</h2>
-    <button id="btn-sim-phishing" class="prueba" type="button">Simular: SÍ es phishing (3 fallos)</button>
-    <button id="btn-sim-seguro" class="prueba" type="button">Simular: NO es phishing</button>
+    <section id="ventana2" class="paso ventana-oculta">
+      <h2>Lectura Segura</h2>
+      <p>Revisa los datos del correo. La información es ficticia.</p>
+      <p><strong>Remitente:</strong> <span id="remitente">soporte@servicio-falso.example</span></p>
+      <p><strong>Asunto:</strong> <span id="asunto">Su cuenta será bloqueada hoy.</span></p>
+      <h3>Contenido del correo</h3>
+      <div id="contenidoCorreo">Debe confirmar sus datos haciendo clic en un enlace para evitar el bloqueo de su cuenta.</div>
+      <p><strong>Consejo:</strong> No abras enlaces sospechosos. Verifica desde un canal oficial.</p>
+      <button type="button" onclick="mostrarVentana(1)">Volver</button>
+      <button type="button" onclick="mostrarVentana(3)">Continuar a Análisis</button>
+    </section>
 
-    <div id="avatar-asistente"></div>
-    <div id="cultura-consciente"></div>
+    <section id="ventana3" class="paso ventana-oculta">
+      <h2>Análisis en Vivo</h2>
+      <p>Se revisarán algunas señales de seguridad del correo.</p>
+      <div class="progreso-analisis">
+        <p id="estadoAnalisis">Demostración lista para iniciar.</p>
+        <progress id="barraProgreso" value="0" max="100"></progress>
+        <p id="porcentajeProgreso">0 %</p>
+      </div>
+      <h3>Comprobaciones</h3>
+      <ul id="listaComprobaciones">
+        <li>Dominio del remitente: revisar</li>
+        <li>Mensaje de urgencia: revisar</li>
+        <li>Solicitud de datos: revisar</li>
+      </ul>
+      <p>Selecciona una opción para probar el asistente.</p>
+      <button id="btn-sim-phishing" type="button">Simular correo sospechoso</button>
+      <button id="btn-sim-seguro" type="button">Simular correo seguro</button>
+      <button type="button" onclick="mostrarVentana(2)">Volver</button>
+      <button type="button" onclick="mostrarVentana(4)">Continuar a Veredicto</button>
+    </section>
+
+    <section id="ventana4" class="paso ventana-oculta">
+      <h2>Veredicto Final</h2>
+      <p>Resultado de la revisión:</p>
+      <h3 id="resultadoAnalisis">Posible phishing: correo sospechoso</h3>
+      <h3>Indicadores encontrados</h3>
+      <ul id="indicadoresEncontrados">
+        <li>Dominio que no corresponde a un canal oficial.</li>
+        <li>Mensaje que presiona para actuar rápido.</li>
+        <li>Solicitud de datos mediante un enlace.</li>
+      </ul>
+      <h3>Recomendación</h3>
+      <p id="recomendacionesAnalisis">No hagas clic ni entregues tus datos. Verifica por un canal oficial.</p>
+      <div id="avatar-asistente"></div>
+      <div id="cultura-consciente"></div>
+      <button type="button" onclick="mostrarVentana(3)">Volver</button>
+      <button type="button" onclick="mostrarVentana(1)">Inicio</button>
+    </section>
   </main>
 
-  <script src="control_zoom.js"></script>
-  <script src="lector_voz.js"></script>
-  <script src="avatar_asistente.js"></script>
-  <script src="cultura_consciente.js"></script>
+  <footer>
+    <p>VigíaIESS - Educación y seguridad de la información</p>
+    <p>Herramienta educativa para identificar correos sospechosos.</p>
+    <p><a href="/accesibilidad/Demo_accesibilidad.html">Demostración de accesibilidad</a></p>
+  </footer>
+
+  <script src="/assets/js/flujo_ventanas.js"></script>
+  <script src="/accesibilidad/control_zoom.js"></script>
+  <script src="/accesibilidad/lector_voz.js"></script>
+  <script src="/accesibilidad/avatar_asistente.js"></script>
+  <script src="/accesibilidad/cultura_consciente.js"></script>
   <script>
     (function () {
       var casoPhishing = {
@@ -80,52 +102,110 @@
         indicios: [
           {
             nombre: 'Dominio falso del remitente',
-            explicacion: 'El correo viene de servicio-falso.example y no de un dominio oficial.',
+            explicacion: 'El correo viene de un dominio que no corresponde a uno oficial.',
             pregunta: {
-              enunciado: 'El remitente es soporte@servicio-falso.example. ¿Qué conviene hacer?',
+              enunciado: 'El remitente usa un dominio desconocido. ¿Qué conviene hacer?',
               opciones: [
-                { t: 'Desconfiar: el dominio no corresponde a un canal oficial.', ok: true, f: 'Revisar la dirección completa del remitente ayuda a detectar suplantaciones.' },
-                { t: 'Confiar porque dice «soporte» al inicio.', ok: false, f: 'Cualquier persona puede escribir «soporte» en un correo falso.' }
+                { t: 'Desconfiar y verificar por un canal oficial.', ok: true, f: 'Revisa siempre la dirección completa del remitente.' },
+                { t: 'Confiar porque dice soporte.', ok: false, f: 'La palabra soporte puede aparecer en un correo falso.' }
               ]
             }
           },
           {
-            nombre: 'Urgencia para presionar',
-            explicacion: 'Dice que su cuenta será bloqueada hoy mismo para que actúe sin pensar.',
+            nombre: 'Mensaje de urgencia',
+            explicacion: 'El correo amenaza con bloquear la cuenta para presionar al usuario.',
             pregunta: {
-              enunciado: 'Cuando un mensaje exige actuar «de inmediato» o amenaza con bloquear su cuenta, ¿qué busca?',
+              enunciado: '¿Qué busca un mensaje que exige actuar de inmediato?',
               opciones: [
-                { t: 'Hacer clic o dar datos rápido sin verificar.', ok: true, f: 'La prisa artificial es un truco clásico para que usted no revise con calma.' },
-                { t: 'Facilitarle el trámite sin riesgos.', ok: false, f: 'Las amenazas urgentes suelen ser una trampa para apurar su decisión.' }
+                { t: 'Que actúes rápido sin verificar.', ok: true, f: 'La urgencia es una señal común de phishing.' },
+                { t: 'Ayudarte sin riesgos.', ok: false, f: 'Las amenazas urgentes pueden ser una trampa.' }
               ]
             }
           },
           {
-            nombre: 'Pedido de confirmar datos por enlace',
-            explicacion: 'Le pide confirmar sus datos haciendo clic en un enlace del correo.',
+            nombre: 'Solicitud de datos por enlace',
+            explicacion: 'El correo pide confirmar datos mediante un enlace.',
             pregunta: {
-              enunciado: 'Le piden confirmar sus datos desde un enlace del correo. ¿Cuál es la acción más segura?',
+              enunciado: '¿Qué debes hacer si te piden datos desde un enlace?',
               opciones: [
-                { t: 'No hacer clic y entrar por su cuenta o canal oficial conocido.', ok: true, f: 'Verificar por un canal oficial conocido protege sus claves y datos.' },
-                { t: 'Ingresar su clave en el enlace para salir de la duda.', ok: false, f: 'Nunca entregue claves ni datos sensibles desde enlaces de correos dudosos.' }
+                { t: 'No abrirlo y verificar por un canal oficial.', ok: true, f: 'Usa un canal oficial que ya conozcas.' },
+                { t: 'Ingresar tu clave para comprobar.', ok: false, f: 'Nunca entregues claves en enlaces dudosos.' }
               ]
             }
           }
         ]
       };
 
-      var casoSeguro = {
-        es_phishing: false,
-        indicios: []
-      };
+      var casoSeguro = { es_phishing: false, indicios: [] };
 
-      document.getElementById('btn-sim-phishing').addEventListener('click', function () {
-        window.VigiaAvatar.explicar(casoPhishing);
-      });
+      var botonPhishing = document.getElementById('btn-sim-phishing');
+      var botonSeguro = document.getElementById('btn-sim-seguro');
+      var barra = document.getElementById('barraProgreso');
+      var porcentaje = document.getElementById('porcentajeProgreso');
+      var estado = document.getElementById('estadoAnalisis');
+      var lista = document.getElementById('listaComprobaciones');
+      var analisisActivo = false;
 
-      document.getElementById('btn-sim-seguro').addEventListener('click', function () {
-        window.VigiaAvatar.explicar(casoSeguro);
-      });
+      function esperar(ms) {
+        return new Promise(function (resolve) { setTimeout(resolve, ms); });
+      }
+
+      async function avanzar(inicio, fin, duracion, mensaje, comprobacion) {
+        estado.textContent = mensaje;
+        var pasos = Math.ceil(duracion / 70);
+        for (var i = 1; i <= pasos; i++) {
+          var valor = Math.round(inicio + (fin - inicio) * i / pasos);
+          barra.value = valor;
+          porcentaje.textContent = valor + ' %';
+          await esperar(duracion / pasos);
+        }
+        if (comprobacion) {
+          var li = document.createElement('li');
+          li.textContent = comprobacion;
+          lista.appendChild(li);
+        }
+      }
+
+      async function analizarDemo(caso) {
+        if (analisisActivo) return;
+        analisisActivo = true;
+        botonPhishing.disabled = true;
+        botonSeguro.disabled = true;
+        lista.textContent = '';
+        barra.value = 0;
+        porcentaje.textContent = '0 %';
+        estado.textContent = 'Preparando la revisión…';
+        try {
+          await avanzar(0, 30, 750, 'Leyendo el remitente y el asunto…', 'Remitente y asunto revisados.');
+          await avanzar(30, 65, 900, 'Revisando enlaces y señales de urgencia…', 'Enlaces y mensaje revisados.');
+          await avanzar(65, 92, 750, 'Comprobando solicitudes de datos personales…', 'Solicitudes de datos revisadas.');
+          await avanzar(92, 100, 300, 'Preparando el resultado…', 'Revisión finalizada.');
+          estado.textContent = 'Análisis completado.';
+          document.getElementById('resultadoAnalisis').textContent = caso.es_phishing
+            ? 'Se detectaron señales de posible phishing'
+            : 'No se detectaron señales de phishing en este ejemplo';
+          document.getElementById('indicadoresEncontrados').textContent = '';
+          (caso.indicios || []).forEach(function (indicio) {
+            var li = document.createElement('li');
+            li.textContent = indicio.nombre + ': ' + indicio.explicacion;
+            document.getElementById('indicadoresEncontrados').appendChild(li);
+          });
+          if (!caso.es_phishing) {
+            var liSeguro = document.createElement('li');
+            liSeguro.textContent = 'No se encontraron indicadores en esta simulación.';
+            document.getElementById('indicadoresEncontrados').appendChild(liSeguro);
+          }
+          window.VigiaAvatar.explicar(caso);
+          mostrarVentana(4);
+        } finally {
+          analisisActivo = false;
+          botonPhishing.disabled = false;
+          botonSeguro.disabled = false;
+        }
+      }
+
+      botonPhishing.addEventListener('click', function () { analizarDemo(casoPhishing); });
+      botonSeguro.addEventListener('click', function () { analizarDemo(casoSeguro); });
     })();
   </script>
 </body>

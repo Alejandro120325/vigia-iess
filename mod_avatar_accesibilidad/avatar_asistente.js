@@ -96,7 +96,7 @@
       figBox.innerHTML = SVG;
       boca = figBox.querySelector('.vg-av__boca');
       pico = figBox.querySelector('.vg-av__pico');
-      if (nota3D) nota3D.textContent = 'Pantera 3D: en preparación';
+      if (nota3D) nota3D.textContent = 'Búho 3D: en preparación';
       return;
     }
     asegurarModelViewer(function (ok) {
@@ -105,14 +105,14 @@
       var mv = document.createElement('model-viewer');
       mv.className = 'vg-av__mv';
       mv.setAttribute('src', config3D.url);
-      mv.setAttribute('alt', 'Pantera 3D Vigía, asistente virtual');
+      mv.setAttribute('alt', 'Búho 3D Vigía, asistente virtual');
       mv.setAttribute('autoplay', '');
       if (!sinMovimiento) mv.setAttribute('camera-controls', '');
       mv.setAttribute('disable-tap', '');
       figBox.appendChild(mv);
       boca = null;
       pico = null;
-      if (nota3D) nota3D.textContent = 'Pantera 3D activa';
+      if (nota3D) nota3D.textContent = 'Búho 3D activo';
       animar3D(config3D.animReposo);
     });
   }
@@ -161,17 +161,17 @@
 
   /* ---------- Semáforo progresivo ---------- */
   function actualizarSemaforo() {
-    var nivel = 'verde', etiqueta = 'Semáforo en VERDE: 0 fallos confirmados aún.';
+    var nivel = 'verde', etiqueta = 'Nivel de riesgo bajo: todavía no hay fallos confirmados.';
     if (erroresDetectados >= 3 || (totalFallos > 0 && erroresDetectados >= totalFallos)) {
       nivel = 'rojo';
-      etiqueta = 'Semáforo en ROJO: ' + erroresDetectados + ' de ' + Math.max(totalFallos, erroresDetectados) + ' fallos detectados. Alto riesgo de phishing.';
+      etiqueta = 'Nivel de riesgo alto: ' + erroresDetectados + ' de ' + Math.max(totalFallos, erroresDetectados) + ' fallos detectados. Alto riesgo de phishing.';
     } else if (erroresDetectados >= 1) {
       nivel = 'amarillo';
-      etiqueta = 'Semáforo en AMARILLO: ' + erroresDetectados + ' fallo(s) detectado(s). Precaución.';
+      etiqueta = 'Nivel de riesgo moderado: ' + erroresDetectados + ' fallo(s) detectado(s). Precaución.';
     }
-    focoVerde.classList.toggle('activa', nivel === 'verde');
-    focoAmarillo.classList.toggle('activa', nivel === 'amarillo');
-    focoRojo.classList.toggle('activa', nivel === 'rojo');
+    
+    
+    
     semTxt.textContent = etiqueta;
   }
 
@@ -243,9 +243,9 @@
           if (op.ok) {
             erroresDetectados = Math.min(totalFallos, erroresDetectados + 1);
             actualizarSemaforo();
-            animar3D(config3D.animAcierto);
+            
           } else {
-            animar3D(config3D.animAlerta);
+            
           }
           fb.textContent = (op.ok ? '¡Correcto! ' : 'Revisemos: ') + op.f;
           sigBtn.hidden = false;
@@ -292,8 +292,8 @@
     tarjeta.classList.add(ultimo.es ? 'vg-av--alerta' : 'vg-av--ok');
     veredicto.hidden = false;
     veredicto.textContent = ultimo.es
-      ? '⚠ Posible phishing · ' + totalFallos + (totalFallos === 1 ? ' fallo por revisar' : ' fallos por revisar')
-      : '✔ Sin fallos de phishing detectados';
+      ? 'Posible phishing: ' + totalFallos + (totalFallos === 1 ? ' fallo por revisar' : ' fallos por revisar')
+      : 'No se detectaron señales de phishing';
 
     actualizarSemaforo();
     pintarPasoClase();
@@ -337,41 +337,37 @@
     estado = el('p', '', ''); estado.style.cssText = 'margin:.3rem 0 0;font-weight:700';
     info.appendChild(estado);
 
-    var btn = boton('vg-av__btn', '🔊 Hablar con Vigía');
+    var btn = boton('vg-av__btn', 'Hablar con Vigía');
     btn.addEventListener('click', function () { ultimo ? pintarPasoClase() : saludar(); });
     info.appendChild(btn);
 
-    cab.appendChild(figBox); cab.appendChild(info);
+    cab.appendChild(figBox);
+    cab.appendChild(info);
 
     veredicto = el('p', 'vg-av__veredicto', ''); veredicto.hidden = true;
     veredicto.setAttribute('role', 'status');
 
     var sem = el('div', 'vg-av__semaforo');
-    var luces = el('div', 'vg-sem__luces'); luces.setAttribute('aria-hidden', 'true');
-    focoVerde = el('span', 'vg-sem__foco vg-sem__foco--verde activa');
-    focoAmarillo = el('span', 'vg-sem__foco vg-sem__foco--amarillo');
-    focoRojo = el('span', 'vg-sem__foco vg-sem__foco--rojo');
-    luces.appendChild(focoVerde); luces.appendChild(focoAmarillo); luces.appendChild(focoRojo);
-    semTxt = el('div', 'vg-sem__txt', 'Semáforo en VERDE: 0 fallos confirmados aún.');
+    semTxt = el('div', 'vg-sem__txt', 'Nivel de riesgo bajo: todavía no hay fallos confirmados.');
     semTxt.setAttribute('role', 'status'); semTxt.setAttribute('aria-live', 'polite');
-    sem.appendChild(luces); sem.appendChild(semTxt);
+    sem.appendChild(semTxt);
 
     claseBox = el('div', 'vg-av__clase');
     claseBox.setAttribute('role', 'region');
     claseBox.setAttribute('aria-label', 'Clase interactiva sobre phishing');
     claseBox.appendChild(el('h3', '', 'Clase interactiva de seguridad'));
-    claseBox.appendChild(el('p', '', 'Pulse «Simular: SÍ es phishing» para comenzar la clase con explicación de phishing, impacto, semáforo y preguntas cortas.'));
+    claseBox.appendChild(el('p', '', 'Pulse «Simular: SÍ es phishing» para comenzar la clase con explicación de phishing, impacto y preguntas cortas.'));
 
     sub = el('div', 'vg-av__sub', 'Hola, soy ' + NOMBRE + '. Aquí verá los subtítulos en letra grande.');
     sub.setAttribute('aria-live', 'off');
 
     var rep = el('div', 'vg-av__rep');
-    rep.appendChild(el('span', '', '📧 Reporte al canal oficial:'));
+    rep.appendChild(el('span', '', 'Reporte al canal oficial:'));
     rep.appendChild(el('strong', '', CORREO));
     var copiar = boton('vg-av__copia', 'Copiar');
     msgCopia = el('span', '', ''); msgCopia.setAttribute('role', 'status');
     copiar.addEventListener('click', function () {
-      function ok() { msgCopia.textContent = '✔ Copiado'; }
+      function ok() { msgCopia.textContent = 'Correo copiado.'; }
       function fallo() { msgCopia.textContent = 'Seleccione y copie el texto'; }
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(CORREO).then(ok, fallo);

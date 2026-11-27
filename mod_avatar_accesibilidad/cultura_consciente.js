@@ -29,11 +29,11 @@ html.alto-contraste .vg-cc__op--ok,html.alto-contraste .vg-cc__op--mal{backgroun
 `;
 
   var PASOS = [
-    { icono: '📧', titulo: 'Abra el correo en Gmail',
+    { titulo: 'Abra el correo en Gmail',
       texto: 'Entre a Gmail desde la computadora y haga clic en el correo que quiere revisar. No toque ningún enlace ni archivo adjunto.' },
-    { icono: '🖨️', titulo: 'Pulse el icono de la impresora',
+    { titulo: 'Pulse el icono de la impresora',
       texto: 'Arriba a la derecha del correo está el icono de la impresora. Si no lo ve, pulse los tres puntos y elija Imprimir.' },
-    { icono: '📄', titulo: 'Guárdelo como PDF',
+    { titulo: 'Guárdelo como PDF',
       texto: 'En la ventana que se abre, en Destino elija Guardar como PDF y pulse Guardar. Después suba ese archivo aquí.' }
   ];
 
@@ -89,10 +89,10 @@ html.alto-contraste .vg-cc__op--ok,html.alto-contraste .vg-cc__op--mal{backgroun
       b.addEventListener('click', function () {
         botones.forEach(function (x) { x.disabled = true; });
         b.classList.add(o.ok ? 'vg-cc__op--ok' : 'vg-cc__op--mal');
-        b.textContent = (o.ok ? '✔ ' : '✖ ') + b.textContent;
+        b.textContent = b.textContent;
         if (!o.ok) {
           p.opciones.forEach(function (c, j) {
-            if (c.ok) { botones[j].classList.add('vg-cc__op--ok'); botones[j].textContent = '✔ ' + botones[j].textContent; }
+            if (c.ok) { botones[j].classList.add('vg-cc__op--ok'); botones[j].textContent = botones[j].textContent; }
           });
         }
         fb.textContent = (o.ok ? '¡Muy bien! ' : 'Casi. La respuesta correcta está marcada. ') + o.f;
@@ -119,13 +119,11 @@ html.alto-contraste .vg-cc__op--ok,html.alto-contraste .vg-cc__op--mal{backgroun
     PASOS.forEach(function (paso, n) {
       var li = el('li', 'vg-cc__paso');
       li.appendChild(el('span', 'vg-cc__num', String(n + 1)));
-      var ico = el('span', 'vg-cc__ico', paso.icono); ico.setAttribute('aria-hidden', 'true');
-      li.appendChild(ico);
       var txt = el('div', 'vg-cc__txt');
       txt.appendChild(el('strong', '', paso.titulo));
       txt.appendChild(el('span', '', paso.texto));
       li.appendChild(txt);
-      var esc = boton('vg-cc__btn', '🔊 Escuchar');
+      var esc = boton('vg-cc__btn', 'Escuchar paso');
       esc.setAttribute('aria-label', 'Escuchar el paso ' + (n + 1));
       esc.addEventListener('click', function () { hablar('Paso ' + (n + 1) + '. ' + paso.titulo + '. ' + paso.texto); });
       li.appendChild(esc);
@@ -133,7 +131,7 @@ html.alto-contraste .vg-cc__op--ok,html.alto-contraste .vg-cc__op--mal{backgroun
     });
     host.appendChild(ol);
 
-    var aviso = el('p', 'vg-cc__aviso', '🔒 Su correo se queda en este equipo. Nunca haga clic en enlaces ni abra adjuntos mientras lo revisa.');
+    var aviso = el('p', 'vg-cc__aviso', 'Su correo se queda en este equipo. Nunca haga clic en enlaces ni abra adjuntos mientras lo revisa.');
     host.appendChild(aviso);
 
     host.appendChild(el('h3', '', 'Una pregunta rápida'));

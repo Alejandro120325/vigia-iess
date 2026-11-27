@@ -1,11 +1,12 @@
-"""Pruebas locales del extractor y reglas; no requieren Flask ni ONNX Runtime."""
-
+"""Pruebas de reglas, extracción e integración de la aplicación Vigía IESS."""
 from __future__ import annotations
 
 import hashlib
 import unittest
 from email.message import EmailMessage
+from unittest.mock import patch
 
+from app import app
 from mod_backend_api.config_canales import clasificar_dominio
 from mod_backend_api.extractor_seguro import extraer_correo_seguro
 from mod_ia_motor.reglas_indicios import detectar_indicios
@@ -38,7 +39,7 @@ class TestExtractor(unittest.TestCase):
         self.assertEqual(correo["huella_sha256"], hashlib.sha256(original).hexdigest())
         self.assertIsNone(correo["hops_count"])
         self.assertTrue(correo["enlace_disfrazado"])
-        self.assertTrue(any("https[://]t.ly" in correo["cuerpo_neutralizado"] for _ in [0]))
+        self.assertIn("https[://]t.ly", correo["cuerpo_neutralizado"])
         self.assertGreaterEqual(correo["url_count"], 2)
 
     def test_archivo_con_extension_pdf_pero_no_es_pdf_se_rechaza(self):
@@ -55,9 +56,9 @@ class TestReglas(unittest.TestCase):
             "attachments_types": "",
             "sender": "notificaciones@iess.gob.ec",
         }
-        codes = {item["codigo"] for item in detectar_indicios(correo)}
-        self.assertIn("I2", codes)
-        self.assertIn("I4", codes)
+        codigos = {item["codigo"] for item in detectar_indicios(correo)}
+        self.assertIn("I2", codigos)
+        self.assertIn("I4", codigos)
 
     def test_qr_se_detecta_sin_visitar_ni_resolver_la_imagen(self):
         correo = {
@@ -67,9 +68,9 @@ class TestReglas(unittest.TestCase):
             "reply_to": "",
             "adjuntos": [{"nombre": "codigo_qr.png", "extension": ".png", "parece_qr": True}],
         }
-        codes = {item["codigo"] for item in detectar_indicios(correo)}
-        self.assertIn("I11", codes)
-        self.assertIn("I9", codes)
+        codigos = {item["codigo"] for item in detectar_indicios(correo)}
+        self.assertIn("I11", codigos)
+        self.assertIn("I9", codigos)
 
     def test_adjunto_pdf_no_es_peligroso_por_extension(self):
         correo = {
@@ -80,9 +81,9 @@ class TestReglas(unittest.TestCase):
             "attachments_types": ".pdf",
             "adjuntos": [{"nombre": "planilla.pdf", "extension": ".pdf", "parece_qr": False}],
         }
-        codes = {item["codigo"] for item in detectar_indicios(correo)}
-        self.assertNotIn("I5", codes)
-        self.assertEqual(codes, set())
+        codigos = {item["codigo"] for item in detectar_indicios(correo)}
+        self.assertNotIn("I5", codigos)
+        self.assertEqual(codigos, set())
 
     def test_qr_no_se_confunde_con_solicitud_de_codigo_de_seguridad(self):
         correo = {
@@ -93,9 +94,62 @@ class TestReglas(unittest.TestCase):
             "attachments_types": ".png",
             "adjuntos": [{"nombre": "codigo_qr.png", "extension": ".png", "parece_qr": True}],
         }
-        codes = {item["codigo"] for item in detectar_indicios(correo)}
-        self.assertNotIn("I3", codes)
-        self.assertIn("I11", codes)
+        codigos = {item["codigo"] for item in detectar_indicios(correo)}
+        self.assertNotIn("I3", codigos)
+        self.assertIn("I11", codigos)
+
+
+class TestAplicacionIntegrada(unittest.TestCase):
+    def setUp(self):
+        app.config.update(
+            TESTING=True,
+            INTEGRITY_SECRET="clave-de-pruebas-vigia-iess-que-supera-32-caracteres",
+            REQUIRE_SIGNED_CORREO=True,
+        )
+        self.cliente = app.test_client()
+
+    def test_interfaz_y_recursos_se_publican(self):
+        pagina = self.cliente.get("/")
+        self.assertEqual(pagina.status_code, 200)
+        self.assertIn("Vigia IESS".encode("utf-8"), pagina.data)
+        self.assertEqual(self.cliente.get("/assets/js/cliente_api.js").status_code, 200)
+        self.assertEqual(self.cliente.get("/accesibilidad/avatar_asistente.js").status_code, 200)
+
+    def test_api_canales_oficiales(self):
+        respuesta = self.cliente.get("/api/canales-oficiales")
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertTrue(respuesta.json["ok"])
+        self.assertIn("portal_institucional", respuesta.json["canales"])
+
+    def test_flujo_lectura_y_firma_de_integridad(self):
+        lectura = self.cliente.post("/api/paso1-leer", data={
+            "texto_pegado": "From: alerta@portal-falso.example\nSubject: Aviso urgente\n\nSu cuenta será bloqueada hoy. Revise https://portal-falso.example"
+        })
+        self.assertEqual(lectura.status_code, 200)
+        correo = lectura.json["correo"]
+        self.assertTrue(correo["token_integridad"])
+
+        with patch("mod_backend_api.rutas_api.analizar_correo_ia", return_value={
+            "veredicto": "Sí es phishing",
+            "es_phishing": True,
+            "total_indicios": 1,
+            "codigos_detectados": ["I1"],
+            "indicios": [{"codigo": "I1", "nombre": "Urgencia artificial", "explicacion": "Prueba", "consejo": "Verificar"}],
+            "probabilidad_ml": None,
+            "guion_avatar": "No abra el enlace.",
+        }):
+            analisis = self.cliente.post("/api/paso2-analizar", json={"correo": correo})
+        self.assertEqual(analisis.status_code, 200)
+        self.assertTrue(analisis.json["resultado"]["integridad_paso1_verificada"])
+
+    def test_api_rechaza_un_correo_modificado_despues_de_la_lectura(self):
+        lectura = self.cliente.post("/api/paso1-leer", data={
+            "texto_pegado": "From: persona@example.com\nSubject: Consulta\n\nMensaje de prueba."
+        })
+        correo = lectura.json["correo"]
+        correo["asunto"] = "Asunto manipulado"
+        analisis = self.cliente.post("/api/paso2-analizar", json={"correo": correo})
+        self.assertEqual(analisis.status_code, 400)
 
 
 if __name__ == "__main__":

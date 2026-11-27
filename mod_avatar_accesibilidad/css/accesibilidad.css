@@ -300,3 +300,85 @@ html.alto-contraste .vg-av__op--mal {
   background: #000;
   color: #fff;
 }
+
+/* Ajustes de identidad visual compartida con el flujo principal */
+.vg-barra .vg-btn,
+.vg-voz .vg-btn,
+.vg-av button,
+.vg-cc button {
+  min-height: 38px;
+  padding: 9px 13px;
+  border-radius: 7px;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.vg-barra .vg-btn,
+.vg-voz .vg-btn {
+  min-width: 42px;
+  margin: 2px;
+}
+html.tema-oscuro .vg-av,
+html.tema-oscuro .vg-cc {
+  background: #182432 !important;
+  color: #e7edf4 !important;
+  border-color: #34475b !important;
+}
+html.tema-oscuro .vg-av__cab,
+html.tema-oscuro .vg-av__semaforo,
+html.tema-oscuro .vg-av__clase,
+html.tema-oscuro .vg-av__rep,
+html.tema-oscuro .vg-cc__paso,
+html.tema-oscuro .vg-cc__aviso {
+  background: #202f40 !important;
+  color: #e7edf4 !important;
+  border-color: #34475b !important;
+}
+html.tema-oscuro .vg-av__nombre,
+html.tema-oscuro .vg-cc h2,
+html.tema-oscuro .vg-cc h3 {
+  color: #d6e4f3 !important;
+}
+html.tema-oscuro .vg-av__sub {
+  background: #102338 !important;
+  color: #f0f4f8 !important;
+}
+html.tema-oscuro .vg-av__btn,
+html.tema-oscuro .vg-av__btn-sec,
+html.tema-oscuro .vg-av__op,
+html.tema-oscuro .vg-av__copia,
+html.tema-oscuro .vg-cc__btn,
+html.tema-oscuro .vg-cc__op {
+  background: #315f88 !important;
+  color: #fff !important;
+  border-color: #587da1 !important;
+}
+
+
+/* Demo sin iconos decorativos: controles de accesibilidad y pasos solo con texto. */
+.vg-sem__luces,
+.vg-cc__ico { display: none !important; }
+.vg-av__semaforo { display: block; }
+.vg-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+html.alto-contraste .vg-barra .vg-btn,
+html.alto-contraste .vg-voz .vg-btn {
+  background: #000 !important;
+  color: #ffe600 !important;
+  border: 2px solid #ffe600 !important;
+}
+html.alto-contraste .vg-barra .vg-btn:hover:not(:disabled),
+html.alto-contraste .vg-voz .vg-btn:hover:not(:disabled) {
+  background: #ffe600 !important;
+  color: #000 !important;
+}

@@ -1,141 +1,99 @@
+/* Lectura del correo a través del backend seguro. */
+(function () {
+  'use strict';
 
-/* =================================
-LECTURA Y VALIDACIÓN DEL CORREO
-================================= */
+  window.correoVigiaActual = null;
 
-// Configurar el trabajador de PDF.js
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  function ponerTexto(id, valor, respaldo) {
+    const elemento = document.getElementById(id);
+    if (elemento) elemento.textContent = valor || respaldo || 'No disponible';
+  }
 
+  function mostrarLista(id, elementos, construirTexto, vacio) {
+    const lista = document.getElementById(id);
+    if (!lista) return;
+    lista.textContent = '';
+    if (!elementos || elementos.length === 0) {
+      const li = document.createElement('li');
+      li.textContent = vacio;
+      lista.appendChild(li);
+      return;
+    }
+    elementos.forEach(function (dato) {
+      const li = document.createElement('li');
+      li.textContent = construirTexto(dato);
+      lista.appendChild(li);
+    });
+  }
 
-// Extraer los datos del correo
-function extraerDatosCorreo(texto) {
+  async function validarCorreo() {
+    const inputArchivo = document.getElementById('archivoCorreo');
+    const areaTexto = document.getElementById('textoCorreo');
+    const boton = document.getElementById('btnValidarCorreo');
+    const mensaje = document.getElementById('mensajeCarga');
+    const archivo = inputArchivo && inputArchivo.files ? inputArchivo.files[0] : null;
+    const texto = areaTexto ? areaTexto.value.trim() : '';
 
-    const partes = texto.split(/\r?\n\r?\n/);
-
-    const encabezados = (partes[0] || "")
-        .replace(/\r?\n[ \t]+/g, " ");
-
-    const remitenteEncontrado = texto.match(
-        /^(?:From|De|Remitente):\s*(.+)$/im
-    );
-
-    const asuntoEncontrado = texto.match(
-        /^(?:Subject|Asunto):\s*(.+)$/im
-    );
-
-    return {
-        remitente: remitenteEncontrado
-            ? remitenteEncontrado[1].trim()
-            : "No identificado",
-
-        asunto: asuntoEncontrado
-            ? asuntoEncontrado[1].trim()
-            : "Sin asunto",
-
-        contenido: partes.length > 1
-            ? partes.slice(1).join("\n\n").trim()
-            : texto.trim()
-    };
-}
-
-
-// Leer el texto de un archivo PDF
-async function extraerTextoPDF(archivo) {
-
-    const datosArchivo = await archivo.arrayBuffer();
-
-    const documento = await pdfjsLib.getDocument({
-        data: datosArchivo
-    }).promise;
-
-    let textoCompleto = "";
-
-    // Recorrer todas las páginas del PDF
-    for (let numero = 1; numero <= documento.numPages; numero++) {
-
-        const pagina = await documento.getPage(numero);
-
-        const contenidoPagina = await pagina.getTextContent();
-
-        const textoPagina = contenidoPagina.items
-            .map(elemento => elemento.str)
-            .join(" ");
-
-        textoCompleto += textoPagina + "\n\n";
+    if (!archivo && !texto) {
+      mensaje.textContent = 'Seleccione un PDF/EML o pegue el contenido de un correo.';
+      return;
+    }
+    if (archivo && archivo.size > 10 * 1024 * 1024) {
+      mensaje.textContent = 'El archivo supera el límite de 10 MB.';
+      return;
     }
 
-    return textoCompleto.trim();
-}
-
-
-// Validar y leer el correo
-async function validarCorreo() {
-
-    const archivo = document.querySelector(
-        'input[type="file"]'
-    ).files[0];
-
-    const contenido = document.querySelector(
-        "textarea"
-    ).value.trim();
-
-    if (!archivo && contenido === "") {
-        alert("Por favor, selecciona un correo o pega su contenido.");
-        return;
-    }
-
-    let textoCorreo = contenido;
+    boton.disabled = true;
+    boton.textContent = 'Leyendo correo…';
+    mensaje.textContent = 'El servidor está extrayendo el mensaje sin abrir sus enlaces ni adjuntos.';
 
     try {
+      const respuesta = await window.VigiaAPI.leerCorreo(archivo, texto);
+      const correo = respuesta.correo;
+      window.correoVigiaActual = correo;
 
-        // Si se seleccionó un archivo
-        if (archivo) {
+      ponerTexto('remitente', correo.remitente, 'No identificado');
+      ponerTexto('asunto', correo.asunto, 'Sin asunto');
+      ponerTexto('fechaCorreo', correo.fecha, 'No especificada');
+      ponerTexto('origenCorreo', correo.tipo_origen, 'No especificado');
 
-            const nombreArchivo = archivo.name.toLowerCase();
+      const cuerpo = document.getElementById('contenidoCorreoSeguro') || document.getElementById('contenidoCorreo');
+      cuerpo.textContent = correo.cuerpo_neutralizado || correo.cuerpo || 'El mensaje no contiene texto legible.';
+      ponerTexto('huellaCorreo', correo.huella_sha256, 'No disponible');
 
-            if (nombreArchivo.endsWith(".eml")) {
+      mostrarLista(
+        'listaEnlaces',
+        correo.enlaces,
+        function (enlace) {
+          return (enlace.url_neutralizada || enlace.dominio || 'Destino no disponible') +
+            ' · ' + (enlace.clasificacion_dominio || 'no_verificado') +
+            (enlace.es_acortador ? ' · acortador' : '');
+        },
+        'No se han detectado enlaces.'
+      );
 
-                textoCorreo = await archivo.text();
+      mostrarLista(
+        'listaAdjuntos',
+        correo.adjuntos,
+        function (adjunto) {
+          return (adjunto.nombre || 'Adjunto') + ' · ' +
+            (adjunto.extension || 'sin extensión') + ' · ' +
+            (adjunto.es_peligroso ? 'extensión de riesgo' : 'sin alerta por extensión');
+        },
+        'No se han identificado adjuntos.'
+      );
 
-            } else if (nombreArchivo.endsWith(".pdf")) {
-
-                textoCorreo = await extraerTextoPDF(archivo);
-
-                if (textoCorreo === "") {
-                    alert("No encontramos texto en el PDF. Puede ser un documento escaneado.");
-                    return;
-                }
-
-            } else {
-
-                alert("Formato no compatible. Selecciona un archivo PDF o EML.");
-                return;
-            }
-        }
-
-        // Extraer los datos del correo
-        const datos = extraerDatosCorreo(textoCorreo);
-
-        // Mostrar remitente
-        document.getElementById("remitente").textContent =
-            datos.remitente;
-
-        // Mostrar asunto
-        document.getElementById("asunto").textContent =
-            datos.asunto;
-
-        // Mostrar contenido
-        document.getElementById("contenidoCorreo").textContent =
-            datos.contenido;
-
-        // Avanzar a Lectura Segura
-        mostrarVentana(2);
-
+      mensaje.textContent = 'Correo leído correctamente. Puede revisar el contenido antes de analizarlo.';
+      mensaje.classList.add('mensaje--ok');
+      if (typeof mostrarVentana === 'function') mostrarVentana(2);
     } catch (error) {
-
-        console.error("Error al leer el archivo:", error);
-
-        alert("No se pudo leer el archivo. Comprueba que sea un PDF o EML válido.");
+      mensaje.textContent = error.message;
+      mensaje.classList.remove('mensaje--ok');
+    } finally {
+      boton.disabled = false;
+      boton.textContent = 'Leer correo de forma segura';
     }
-}
+  }
+
+  window.validarCorreo = validarCorreo;
+})();
