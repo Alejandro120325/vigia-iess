@@ -1,141 +1,293 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vigia IESS</title>
-    <link rel="stylesheet" href="/assets/css/estilos_intitucionales.css" />
-    <link rel="stylesheet" href="/accesibilidad/css/accesibilidad.css" />
-  </head>
-  <body>
-    <header>
-      <h1>Vigia IESS</h1>
-      <p>Protege tu información. Identifica correos sospechosos.</p>
-      <p id="estadoSistema">Servicio local de análisis</p>
-    </header>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#102b46">
+  <meta name="description" content="Vigía IESS: herramienta educativa para reconocer correos sospechosos de forma segura.">
+  <title>Vigía IESS | Protección digital</title>
+  <link rel="preconnect" href="https://ajax.googleapis.com">
+  <link rel="stylesheet" href="/assets/css/estilos_intitucionales.css">
+  <link rel="stylesheet" href="/accesibilidad/css/accesibilidad.css">
+</head>
+<body>
+  <header class="site-header" id="inicio">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="Vigía IESS - volver al inicio">
+        <span class="brand-logo">
+          <img src="/assets/img/logo-iess.png" alt="Logotipo del Instituto Ecuatoriano de Seguridad Social">
+        </span>
+        <span class="brand-copy">
+          <strong>Vigía <span>IESS</span></strong>
+          <small>Protección digital para afiliados</small>
+        </span>
+      </a>
 
-    <nav aria-label="Pasos del análisis">
-      <button type="button" data-ir-paso="1" onclick="mostrarVentana(1)">1. Subir Correo</button>
-      <button type="button" data-ir-paso="2" onclick="mostrarVentana(2)">2. Lectura Segura</button>
-      <button type="button" data-ir-paso="3" onclick="mostrarVentana(3)">3. Análisis en Vivo</button>
-      <button type="button" data-ir-paso="4" onclick="mostrarVentana(4)">4. Veredicto Final</button>
-    </nav>
+      <div class="header-side">
+        <div class="header-tag">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="estadoSistema">Comprobando servicio local…</span>
+        </div>
+        <button class="profile-picker" id="selectorPerfil" type="button"
+                aria-haspopup="dialog" aria-expanded="false" aria-label="Elegir imagen de perfil">
+          <img id="perfilIcono" class="profile-picker__icon"
+               src="/assets/img/avatars/joven-mujer.webp" alt="Avatar de perfil: Joven">
+          <span class="profile-picker__copy">
+            <strong>Mi perfil</strong>
+            <small class="profile-picker__text">Joven</small>
+          </span>
+          <span class="profile-picker__change">Cambiar</span>
+        </button>
+        <a class="header-link" href="#contenido-principal">Ir al análisis <span aria-hidden="true">↓</span></a>
+      </div>
+    </div>
+    <div class="hero-copy">
+      <p class="eyebrow">SEGURIDAD INTELIGENTE · CULTURA CONSCIENTE</p>
+      <h1>Antes de confiar en un correo, <span>verifícalo.</span></h1>
+      <p>Revisa mensajes sospechosos sin abrir enlaces ni ejecutar archivos adjuntos. Vigía te muestra qué encontró y cómo actuar.</p>
+    </div>
+  </header>
 
-    <main id="contenido-principal">
-      <!-- Ventana 1: Subir Correo -->
-      <section id="ventana1" class="paso ventana-activa">
-        <h2>Subir Correo</h2>
-        <p>Selecciona el correo que deseas analizar.</p>
+  <nav class="step-nav" aria-label="Etapas del análisis">
+    <button type="button" class="step-link paso-activo" data-ir-paso="1" aria-current="step">
+      <span class="step-number">01</span><span><strong>Cargar correo</strong><small>PDF, EML o texto</small></span>
+    </button>
+    <button type="button" class="step-link" data-ir-paso="2">
+      <span class="step-number">02</span><span><strong>Lectura segura</strong><small>Revisar el contenido</small></span>
+    </button>
+    <button type="button" class="step-link" data-ir-paso="3">
+      <span class="step-number">03</span><span><strong>Análisis</strong><small>Comprobaciones locales</small></span>
+    </button>
+    <button type="button" class="step-link" data-ir-paso="4">
+      <span class="step-number">04</span><span><strong>Veredicto</strong><small>Explicación y acciones</small></span>
+    </button>
+  </nav>
 
-        <label for="archivoCorreo">Seleccionar archivo PDF o EML:</label>
-        <input id="archivoCorreo" name="archivo" type="file" accept=".pdf,.eml">
-        <p>O pega aquí el contenido del correo:</p>
-        <textarea id="textoCorreo" rows="6" cols="40" placeholder="Pega aquí el texto del correo..."></textarea>
-        <br>
-        <button id="btnValidarCorreo" type="button" onclick="validarCorreo()">Continuar a Lectura Segura →</button>
-        <p id="mensajeCarga" role="status" aria-live="polite"></p>
-      </section>
+  <main id="contenido-principal">
+    <div class="main-intro">
+      <div>
+        <p class="eyebrow eyebrow-dark">ASISTENTE DE PREVENCIÓN</p>
+        <h2>Revisa un correo con Vigía</h2>
+        <p>Carga, verifica y recibe una explicación clara.</p>
+      </div>
+      <div class="privacy-pill"><span aria-hidden="true">●</span> Procesamiento local</div>
+    </div>
 
-      <!-- Ventana 2: Lectura Segura -->
-      <section id="ventana2" class="paso ventana-oculta">
-        <h2>Lectura Segura</h2>
-        <p>Revisa la información del correo seleccionado.</p>
+    <section id="ventana1" class="paso window-card ventana-activa" aria-labelledby="tituloPaso1">
+      <div class="window-heading">
+        <div class="window-index">01</div>
+        <div><p class="eyebrow eyebrow-dark">PRIMER PASO</p><h2 id="tituloPaso1">Carga el correo que quieres revisar</h2><p>Selecciona un archivo exportado o pega el contenido del mensaje.</p></div>
+      </div>
 
-        <p><strong>Remitente:</strong> <span id="remitente">No identificado.</span></p>
-        <p><strong>Asunto:</strong> <span id="asunto">Sin asunto.</span></p>
-        <p><strong>Fecha:</strong> <span id="fechaCorreo">No especificada.</span></p>
-
-        <h3>Contenido del correo</h3>
-        <div id="contenidoCorreo">El contenido del correo aparecerá aquí.</div>
-
-        <h3>Enlaces encontrados (no se abren)</h3>
-        <ul id="listaEnlaces"><li>No se han detectado enlaces.</li></ul>
-
-        <h3>Archivos adjuntos</h3>
-        <ul id="listaAdjuntos"><li>No se han identificado adjuntos.</li></ul>
-
-        <p><strong>Huella SHA-256:</strong> <code id="huellaCorreo">No disponible</code></p>
-        <button type="button" onclick="mostrarVentana(1)">← Volver</button>
-        <button type="button" onclick="mostrarVentana(3)">Continuar a Análisis en Vivo →</button>
-      </section>
-
-      <!-- Ventana 3: Análisis en Vivo -->
-      <section id="ventana3" class="paso ventana-oculta">
-        <h2>Análisis en Vivo</h2>
-        <p>Examinaremos el correo en busca de señales sospechosas.</p>
-
-        <div class="progreso-analisis">
-          <p id="estadoAnalisis">Esperando para iniciar el análisis...</p>
-          <progress id="barraProgreso" value="0" max="100"></progress>
-          <p id="porcentajeProgreso">0 %</p>
+      <div class="upload-layout">
+        <div class="upload-panel">
+          <label class="field-label" for="archivoCorreo">Archivo del correo</label>
+          <label class="file-drop" for="archivoCorreo">
+            <span class="file-icon" aria-hidden="true">↥</span>
+            <strong>Seleccionar un archivo</strong>
+            <span>Arrastra aquí o haz clic para buscarlo</span>
+            <small>Formatos admitidos: .EML y PDF · Máximo 10 MB</small>
+            <span id="archivoSeleccionado" class="file-selected" aria-live="polite">Sin archivo seleccionado</span>
+          </label>
+          <input id="archivoCorreo" name="archivo" type="file" accept=".eml,.pdf">
+          <div class="file-actions" aria-label="Acciones del archivo">
+            <button id="btnSeleccionarArchivo" class="btn btn-primary btn-small" type="button">Subir archivo</button>
+            <button id="btnQuitarArchivo" class="btn btn-secondary btn-small" type="button" disabled>Quitar archivo</button>
+          </div>
+          <div class="field-note">PDF o EML · Máximo 10 MB · El archivo no se envía a servicios externos.</div>
         </div>
 
-        <h3>Comprobaciones de seguridad</h3>
-        <ul id="listaComprobaciones">
-          <li>Enlaces externos: pendientes</li>
-          <li>Mensajes de urgencia: pendientes</li>
-          <li>Solicitudes de contraseñas: pendientes</li>
-        </ul>
-        <button type="button" onclick="mostrarVentana(2)">← Volver</button>
-        <button id="btnAnalizar" type="button" onclick="analizarCorreo()">Iniciar Análisis</button>
-      </section>
+        <div class="upload-divider"><span>O TAMBIÉN</span></div>
 
-      <!-- Ventana 4: Veredicto Final -->
-      <section id="ventana4" class="paso ventana-oculta">
-        <h2>Veredicto Final</h2>
-        <p>Resultado de la revisión del correo:</p>
-        <div id="veredictoPanel">
-          <h3 id="resultadoAnalisis">Analisis Pendiente</h3>
-          <p id="resumenAnalisis">Realiza el análisis para conocer el resultado.</p>
+        <div class="paste-panel">
+          <label class="field-label" for="textoCorreo">Pegar el contenido del correo</label>
+          <textarea id="textoCorreo" rows="9" placeholder="De: remitente@ejemplo.com&#10;Asunto: Notificación&#10;&#10;Pega aquí el texto completo del correo…"></textarea>
+          <p class="field-note">Pega el mensaje completo, incluyendo remitente y asunto cuando estén disponibles.</p>
+          <button id="btnLimpiarTexto" class="text-action" type="button">Limpiar texto</button>
+        </div>
+      </div>
+
+      <div class="primary-action-row">
+        <p class="helper-copy">No necesitas abrir el correo sospechoso para analizarlo.</p>
+        <button id="btnValidarCorreo" class="btn btn-primary" type="button" onclick="validarCorreo()">Leer correo de forma segura <span aria-hidden="true">→</span></button>
+      </div>
+      <p id="mensajeCarga" class="inline-status" role="status" aria-live="polite"></p>
+      <details class="help-details">
+        <summary>¿Cómo guardar un correo de Gmail para analizarlo?</summary>
+        <div id="cultura-consciente" class="guide-mount"></div>
+      </details>
+    </section>
+
+    <section id="ventana2" class="paso window-card ventana-oculta" aria-labelledby="tituloPaso2" aria-hidden="true">
+      <div class="window-heading">
+        <div class="window-index">02</div>
+        <div><p class="eyebrow eyebrow-dark">SEGUNDO PASO</p><h2 id="tituloPaso2">Lectura segura del mensaje</h2><p>Comprueba los datos extraídos antes de iniciar el análisis.</p></div>
+      </div>
+
+      <div class="metadata-grid">
+        <article class="metadata-item"><span>REMITENTE</span><strong id="remitente">No identificado</strong></article>
+        <article class="metadata-item"><span>ASUNTO</span><strong id="asunto">Sin asunto</strong></article>
+        <article class="metadata-item"><span>FECHA</span><strong id="fechaCorreo">No especificada</strong></article>
+        <article class="metadata-item"><span>ORIGEN</span><strong id="origenCorreo">No especificado</strong></article>
+      </div>
+
+      <div class="content-block">
+        <div class="block-heading"><div><p class="eyebrow eyebrow-dark">CONTENIDO EXTRAÍDO</p><h3>Mensaje del correo</h3></div><span class="safe-tag">Vista neutralizada</span></div>
+        <div id="contenidoCorreo" class="email-preview">El contenido del correo aparecerá aquí.</div>
+      </div>
+
+      <div class="two-column-blocks">
+        <article class="content-block">
+          <div class="block-heading"><div><p class="eyebrow eyebrow-dark">DESTINOS DETECTADOS</p><h3>Enlaces encontrados</h3></div></div>
+          <ul id="listaEnlaces" class="data-list"><li>No se han detectado enlaces.</li></ul>
+          <p class="block-note">Los enlaces se muestran como texto neutralizado. No se visitan.</p>
+        </article>
+        <article class="content-block">
+          <div class="block-heading"><div><p class="eyebrow eyebrow-dark">ARCHIVOS DEL MENSAJE</p><h3>Adjuntos identificados</h3></div></div>
+          <ul id="listaAdjuntos" class="data-list"><li>No se han identificado adjuntos.</li></ul>
+          <p class="block-note">Se inspeccionan nombre, extensión y metadatos. No se ejecuta ningún archivo.</p>
+        </article>
+      </div>
+
+      <div class="hash-block"><span>HUELLA DE INTEGRIDAD · SHA-256</span><code id="huellaCorreo">No disponible</code></div>
+      <div class="step-actions">
+        <button class="btn btn-secondary" type="button" onclick="mostrarVentana(1)">← Volver a cargar</button>
+        <button class="btn btn-primary" type="button" onclick="mostrarVentana(3)">Continuar al análisis <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <section id="ventana3" class="paso window-card ventana-oculta" aria-labelledby="tituloPaso3" aria-hidden="true">
+      <div class="window-heading">
+        <div class="window-index">03</div>
+        <div><p class="eyebrow eyebrow-dark">TERCER PASO</p><h2 id="tituloPaso3">Análisis de seguridad</h2><p>El motor local verifica la integridad y busca señales asociadas al phishing.</p></div>
+      </div>
+
+      <div class="analysis-status-card">
+        <div class="analysis-status-head"><div><span class="status-dot status-dot-large" aria-hidden="true"></span><strong id="estadoAnalisis">Preparado para analizar</strong></div><strong id="porcentajeProgreso">0 %</strong></div>
+        <progress id="barraProgreso" value="0" max="100">0%</progress>
+        <p>Comprobación local del correo. No se abren enlaces ni adjuntos.</p>
+      </div>
+
+      <details class="help-details checks-details">
+        <summary>Ver comprobaciones técnicas</summary>
+        <div class="content-block checks-block">
+          <div class="block-heading"><div><p class="eyebrow eyebrow-dark">VALIDACIONES</p><h3>Comprobaciones de seguridad</h3></div><span class="safe-tag">I1–I11</span></div>
+          <ul id="listaComprobaciones" class="check-list">
+            <li>Integridad del mensaje: pendiente</li>
+            <li>Reglas determinísticas: pendientes</li>
+            <li>Clasificador ONNX: disponibilidad pendiente</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="step-actions">
+        <button class="btn btn-secondary" type="button" onclick="mostrarVentana(2)">← Revisar correo</button>
+        <button id="btnAnalizar" class="btn btn-primary" type="button" onclick="analizarCorreo()">Iniciar análisis local <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <section id="ventana4" class="paso window-card ventana-oculta" aria-labelledby="tituloPaso4" aria-hidden="true">
+      <div class="window-heading">
+        <div class="window-index">04</div>
+        <div><p class="eyebrow eyebrow-dark">CUARTO PASO</p><h2 id="tituloPaso4">Veredicto y recomendaciones</h2><p>Vigía te explica el resultado con voz y subtítulos.</p></div>
+      </div>
+
+      <div id="veredictoPanel" class="verdict-panel">
+        <span class="verdict-overline">RESULTADO DEL ANÁLISIS</span>
+        <h3 id="resultadoAnalisis">Análisis pendiente</h3>
+        <p id="resumenAnalisis">Realiza el análisis para conocer el resultado.</p>
+        <span id="totalIndicios" class="verdict-count">0 indicios detectados</span>
+      </div>
+
+
+      <details class="result-technical">
+        <summary>Ver evidencias y detalles técnicos</summary>
+        <div class="content-block">
+          <div class="block-heading"><div><p class="eyebrow eyebrow-dark">EVIDENCIAS</p><h3>Indicadores encontrados</h3></div></div>
+          <ul id="indicadoresEncontrados" class="indicator-list"><li>Aún no se ha realizado ningún análisis.</li></ul>
         </div>
 
-        <h3>Indicadores encontrados</h3>
-        <ul id="indicadoresEncontrados">
-          <li>Aún no se ha realizado ningún análisis.</li>
-        </ul>
+        <div class="two-column-blocks result-details">
+          <article class="content-block">
+            <div class="block-heading"><div><p class="eyebrow eyebrow-dark">SEÑAL COMPLEMENTARIA</p><h3>Modelo de aprendizaje automático</h3></div></div>
+            <p id="probabilidadML" class="ml-result">No disponible hasta completar el análisis.</p>
+            <p id="notaML" class="block-note">El modelo complementa las comprobaciones de seguridad.</p>
+          </article>
+          <article class="content-block">
+            <div class="block-heading"><div><p class="eyebrow eyebrow-dark">SIGUIENTE ACCIÓN</p><h3>Recomendaciones</h3></div></div>
+            <p id="recomendacionesAnalisis" class="recommendation-copy">Realiza el análisis para conocer las recomendaciones.</p>
+          </article>
+        </div>
 
-        <h3>Resultado del modelo de aprendizaje automático</h3>
-        <p id="probabilidadML">No disponible hasta completar el análisis.</p>
-        <p id="notaML">El modelo complementa las comprobaciones de seguridad.</p>
+        <div class="content-block channels-block">
+          <div class="block-heading"><div><p class="eyebrow eyebrow-dark">VERIFICACIÓN INSTITUCIONAL</p><h3>Canales configurados</h3></div></div>
+          <ul id="listaCanales" class="data-list"><li>Se mostrarán después del análisis.</li></ul>
+          <p class="block-note">Confirma cualquier comunicación escribiendo el portal institucional directamente en el navegador.</p>
+        </div>
 
-        <h3>Recomendaciones de seguridad</h3>
-        <p id="recomendacionesAnalisis">Realiza el análisis para conocer las recomendaciones.</p>
-
-        <h3>Canales oficiales</h3>
-        <ul id="listaCanales"><li>Se mostrarán después del análisis.</li></ul>
-
-        <button type="button" onclick="mostrarVentana(3)">← Volver</button>
-        <button type="button" onclick="mostrarVentana(1)">Inicio</button>
-
-        <details>
-          <summary>Prueba con los cinco correos de ejemplo</summary>
-          <p>Ejecuta la revisión de los correos de práctica incluidos en el proyecto.</p>
-          <button id="btnAuditoria" type="button" onclick="ejecutarAuditoriaPractica()">Ejecutar auditoría</button>
-          <p id="estadoAuditoria" role="status" aria-live="polite"></p>
-          <div id="resultadosAuditoria"></div>
+        <details class="audit-details">
+          <summary>Auditoría de los cinco correos de práctica</summary>
+          <p>Ejecuta una revisión adicional de los mensajes de ejemplo incluidos en el proyecto.</p>
+          <button id="btnAuditoria" class="btn btn-secondary" type="button" onclick="ejecutarAuditoriaPractica()">Ejecutar auditoría</button>
+          <p id="estadoAuditoria" class="inline-status" role="status" aria-live="polite"></p>
+          <div id="resultadosAuditoria" class="audit-results"></div>
         </details>
+
+      </details>
+
+      <div class="step-actions">
+        <button class="btn btn-secondary" type="button" onclick="mostrarVentana(3)">← Volver al análisis</button>
+        <button class="btn btn-primary" type="button" onclick="mostrarVentana(1)">Analizar otro correo <span aria-hidden="true">↻</span></button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <section class="footer-section">
+        <p class="footer-label">EQUIPO DEL PROYECTO</p>
+        <ul class="team-list">
+          <li>Jairo Alejandro Ojeda Herrera</li>
+          <li>Jesly Anahi Ullauri Castillo</li>
+          <li>Joselyn Dayanna Villacres Tomarema</li>
+          <li>Alexander Miguel Dubert Espinoza</li>
+        </ul>
       </section>
 
-      <section class="vg-avatar-live" aria-label="Asistente virtual Vigía">
-        <div id="vg-avatar-3d" class="vg-avatar-live__scene" role="img" aria-label="Modelo 3D del asistente Vigía"></div>
-        <p id="vg-avatar-estado" role="status" aria-live="polite">Asistente preparado.</p>
+      <section class="footer-section footer-location">
+        <p class="footer-label">UBICACIÓN</p>
+        <div class="map-frame">
+          <iframe
+            title="Mapa de la Universidad Politécnica Salesiana, Campus Sur"
+            src="https://www.google.com/maps?q=Universidad%20Polit%C3%A9cnica%20Salesiana%20Campus%20Sur%2C%20Quito%2C%20Ecuador&output=embed"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen>
+          </iframe>
+        </div>
+        <p class="footer-address">Universidad Politécnica Salesiana · Campus Sur</p>
+        <p class="footer-address-muted">Av. Rumichaca Ñan y Av. Morán Valverde s/n, Quito, Ecuador.</p>
       </section>
-      <div id="avatar-asistente"></div>
-      <div id="cultura-consciente"></div>
-    </main>
 
-    <footer>
-      <p>VigíaIESS - Educación y seguridad de la información</p>
-      <p>Herramienta educativa para identificar correos sospechosos.</p>
-      <p><a href="/accesibilidad/Demo_accesibilidad.html">Abrir demostración de accesibilidad</a></p>
-    </footer>
+      <section class="footer-section footer-repository">
+        <p class="footer-label">CÓDIGO FUENTE</p>
+        <a class="github-card" href="https://github.com/Alejandro120325/vigia-iess" target="_blank" rel="noopener noreferrer">
+          <span class="github-mark" aria-hidden="true">GH</span>
+          <span><strong>Vigía IESS en GitHub</strong><small>Consultar el repositorio del proyecto</small></span>
+          <span class="external-mark" aria-hidden="true">↗</span>
+        </a>
+      </section>
+    </div>
+  </footer>
 
-    <script src="/assets/js/cliente_api.js"></script>
-    <script src="/assets/js/flujo_ventanas.js"></script>
-    <script src="/assets/js/carga.js"></script>
-    <script src="/accesibilidad/control_zoom.js"></script>
-    <script src="/accesibilidad/lector_voz.js"></script>
-    <script src="/accesibilidad/avatar_asistente.js"></script>
-    <script src="/accesibilidad/cultura_consciente.js"></script>
-  </body>
+  <div id="avatar-asistente" aria-label="Mascota asistente Vigía"></div>
+
+  <script src="/assets/js/cliente_api.js"></script>
+  <script src="/assets/js/flujo_ventanas.js"></script>
+  <script src="/assets/js/carga.js"></script>
+  <script src="/accesibilidad/control_zoom.js"></script>
+  <script src="/accesibilidad/lector_voz.js"></script>
+  <script src="/accesibilidad/avatar_asistente.js"></script>
+  <script src="/accesibilidad/cultura_consciente.js"></script>
+</body>
 </html>

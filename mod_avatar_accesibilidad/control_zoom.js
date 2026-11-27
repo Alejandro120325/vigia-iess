@@ -1,88 +1,47 @@
+/* Control visual reducido: conserva únicamente el tema oscuro. */
 (function () {
   'use strict';
-  var MIN = 90, MAX = 150, PASO = 10, DEFECTO = 100;
-  var K_ZOOM = 'vigia_zoom', K_CONTRASTE = 'vigia_contraste', K_TEMA = 'vigia_tema';
-  var zoom = DEFECTO, nivel, menos, mas, contraste, tema, anuncio;
 
-  function leer(k, d) {
-    try { var v = localStorage.getItem(k); return v === null ? d : v; }
-    catch (e) { return d; }
+  var KEY = 'vigia_tema';
+
+  function readSavedTheme() {
+    try { return localStorage.getItem(KEY) === '1'; }
+    catch (_error) { return false; }
   }
-  function guardar(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-  function crearBoton(texto, etiqueta) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'vg-btn'; b.textContent = texto;
-    b.setAttribute('aria-label', etiqueta); b.title = etiqueta;
-    return b;
+
+  function saveTheme(enabled) {
+    try { localStorage.setItem(KEY, enabled ? '1' : '0'); }
+    catch (_error) { /* La app sigue funcionando si el navegador bloquea storage. */ }
   }
-  function aplicarZoom(valor, avisar) {
-    zoom = Math.max(MIN, Math.min(MAX, valor));
-    document.documentElement.style.fontSize = zoom + '%';
-    nivel.textContent = zoom + '%';
-    menos.disabled = zoom <= MIN; mas.disabled = zoom >= MAX;
-    guardar(K_ZOOM, String(zoom));
-    if (avisar) anuncio.textContent = 'Tamaño del texto: ' + zoom + ' por ciento.';
-    document.dispatchEvent(new CustomEvent('vigia:zoom', { detail: { zoom: zoom } }));
+
+  function applyTheme(enabled, button) {
+    document.documentElement.classList.toggle('tema-oscuro', enabled);
+    document.documentElement.classList.remove('alto-contraste');
+    button.textContent = enabled ? 'Tema claro' : 'Tema oscuro';
+    button.setAttribute('aria-pressed', String(enabled));
+    button.setAttribute('aria-label', enabled ? 'Cambiar al tema claro' : 'Activar tema oscuro');
+    saveTheme(enabled);
   }
-  function aplicarContraste(activo, avisar) {
-    document.documentElement.classList.toggle('alto-contraste', activo);
-    contraste.textContent = activo ? 'Contraste activado' : 'Alto contraste';
-    contraste.setAttribute('aria-pressed', String(activo));
-    guardar(K_CONTRASTE, activo ? '1' : '0');
-    if (avisar) anuncio.textContent = activo ? 'Alto contraste activado.' : 'Alto contraste desactivado.';
-  }
-  function aplicarTema(oscuro, avisar) {
-    document.documentElement.classList.toggle('tema-oscuro', oscuro);
-    tema.textContent = oscuro ? 'Tema claro' : 'Tema oscuro';
-    tema.setAttribute('aria-pressed', String(oscuro));
-    guardar(K_TEMA, oscuro ? '1' : '0');
-    if (avisar) anuncio.textContent = oscuro ? 'Tema oscuro activado.' : 'Tema claro activado.';
-  }
-  function iniciar() {
-    var barra = document.createElement('div');
-    barra.className = 'vg-barra';
-    barra.setAttribute('role', 'toolbar');
-    barra.setAttribute('aria-label', 'Opciones de accesibilidad');
-    var titulo = document.createElement('span');
-    titulo.className = 'vg-barra__titulo';
-    titulo.textContent = 'VIGÍA-IESS | Accesibilidad';
-    var grupo = document.createElement('div');
-    grupo.className = 'vg-barra__grupo';
-    menos = crearBoton('A-', 'Reducir tamaño del texto');
-    nivel = document.createElement('span');
-    nivel.className = 'vg-barra__nivel';
-    nivel.setAttribute('aria-live', 'polite');
-    mas = crearBoton('A+', 'Aumentar tamaño del texto');
-    var reset = crearBoton('Restablecer', 'Volver al tamaño normal');
-    contraste = crearBoton('Alto contraste', 'Activar o desactivar alto contraste');
-    tema = crearBoton('Tema oscuro', 'Activar o desactivar tema oscuro');
-    anuncio = document.createElement('span');
-    anuncio.className = 'vg-sr-only';
-    anuncio.setAttribute('role', 'status');
-    anuncio.setAttribute('aria-live', 'polite');
-    menos.addEventListener('click', function () { aplicarZoom(zoom - PASO, true); });
-    mas.addEventListener('click', function () { aplicarZoom(zoom + PASO, true); });
-    reset.addEventListener('click', function () { aplicarZoom(DEFECTO, true); });
-    contraste.addEventListener('click', function () {
-      aplicarContraste(!document.documentElement.classList.contains('alto-contraste'), true);
+
+  function start() {
+    var host = document.querySelector('.header-side') || document.querySelector('.header-inner');
+    if (!host || document.getElementById('vigiaThemeToggle')) return;
+
+    var button = document.createElement('button');
+    button.id = 'vigiaThemeToggle';
+    button.type = 'button';
+    button.className = 'theme-toggle';
+    button.addEventListener('click', function () {
+      applyTheme(!document.documentElement.classList.contains('tema-oscuro'), button);
     });
-    tema.addEventListener('click', function () {
-      aplicarTema(!document.documentElement.classList.contains('tema-oscuro'), true);
-    });
-    [menos, nivel, mas, reset, contraste, tema].forEach(function (e) { grupo.appendChild(e); });
-    barra.appendChild(titulo); barra.appendChild(grupo); barra.appendChild(anuncio);
-    document.body.insertBefore(barra, document.body.firstChild);
-    document.body.classList.add('vigia-con-barra');
-    var guardado = parseInt(leer(K_ZOOM, DEFECTO), 10);
-    aplicarZoom(isNaN(guardado) ? DEFECTO : guardado, false);
-    aplicarContraste(leer(K_CONTRASTE, '0') === '1', false);
-    aplicarTema(leer(K_TEMA, '0') === '1', false);
+
+    var link = host.querySelector('.header-link');
+    if (link) host.insertBefore(button, link);
+    else host.appendChild(button);
+
+    applyTheme(readSavedTheme(), button);
   }
-  window.VigiaZoom = {
-    subir: function () { aplicarZoom(zoom + PASO, true); },
-    bajar: function () { aplicarZoom(zoom - PASO, true); },
-    actual: function () { return zoom; }
-  };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
-  else iniciar();
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })();

@@ -1,302 +1,274 @@
-/* Navegación y resultados de la aplicación integrada. */
+/* Navegación por ventanas, análisis y presentación del resultado. */
 (function () {
   'use strict';
 
-  let analisisEnCurso = false;
+  var analysisRunning = false;
 
-  function mostrarVentana(numero) {
-    if (!Number.isInteger(numero) || numero < 1 || numero > 4) return;
-    document.querySelectorAll('main .paso').forEach(function (ventana) {
-      ventana.classList.toggle('ventana-activa', ventana.id === 'ventana' + numero);
-      ventana.classList.toggle('ventana-oculta', ventana.id !== 'ventana' + numero);
+  function showWindow(number) {
+    if (!Number.isInteger(number) || number < 1 || number > 4) return;
+    document.querySelectorAll('main .paso').forEach(function (section) {
+      var active = section.id === 'ventana' + number;
+      section.classList.toggle('ventana-activa', active);
+      section.classList.toggle('ventana-oculta', !active);
+      section.setAttribute('aria-hidden', String(!active));
     });
-    document.querySelectorAll('[data-ir-paso]').forEach(function (boton) {
-      const activo = Number(boton.dataset.irPaso) === numero;
-      boton.classList.toggle('paso-activo', activo);
-      if (activo) boton.setAttribute('aria-current', 'step');
-      else boton.removeAttribute('aria-current');
+    document.querySelectorAll('[data-ir-paso]').forEach(function (button) {
+      var active = Number(button.dataset.irPaso) === number;
+      button.classList.toggle('paso-activo', active);
+      if (active) button.setAttribute('aria-current', 'step');
+      else button.removeAttribute('aria-current');
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.dispatchEvent(new CustomEvent('vigia:ventana', { detail: { paso: number } }));
   }
 
-  function actualizarProgreso(valor, texto) {
-    document.getElementById('barraProgreso').value = valor;
-    document.getElementById('porcentajeProgreso').textContent = valor + ' %';
-    document.getElementById('estadoAnalisis').textContent = texto;
+  function setProgress(value, text) {
+    var progress = document.getElementById('barraProgreso');
+    var label = document.getElementById('porcentajeProgreso');
+    var status = document.getElementById('estadoAnalisis');
+    if (progress) progress.value = value;
+    if (label) label.textContent = value + ' %';
+    if (status) status.textContent = text;
   }
 
-
-
-  function esperar(ms) {
-    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  function wait(milliseconds) {
+    return new Promise(function (resolve) { window.setTimeout(resolve, milliseconds); });
   }
 
-  async function animarProgreso(desde, hasta, duracion, texto) {
-    const pasos = Math.max(1, Math.ceil(duracion / 65));
-    for (let paso = 1; paso <= pasos; paso++) {
-      const valor = Math.round(desde + (hasta - desde) * (paso / pasos));
-      actualizarProgreso(valor, texto);
-      await esperar(duracion / pasos);
-    }
+  function animateProgress(from, to, duration, message) {
+    return new Promise(function (resolve) {
+      var started = null;
+      function frame(timestamp) {
+        if (started === null) started = timestamp;
+        var elapsed = Math.min(1, (timestamp - started) / duration);
+        var eased = 1 - Math.pow(1 - elapsed, 3);
+        var value = Math.round(from + (to - from) * eased);
+        setProgress(value, message);
+        if (elapsed < 1) window.requestAnimationFrame(frame);
+        else resolve();
+      }
+      window.requestAnimationFrame(frame);
+    });
   }
 
-  function agregarElemento(lista, titulo, detalle) {
-    const li = document.createElement('li');
-    const strong = document.createElement('strong');
-    strong.textContent = titulo;
+  async function animateAnalysisProgress() {
+    setProgress(5, 'Preparando el correo para la revisión…');
+    await animateProgress(5, 18, 620, 'Verificando la integridad del mensaje…');
+    await animateProgress(18, 36, 680, 'Revisando remitente, asunto y contenido…');
+    await animateProgress(36, 54, 680, 'Inspeccionando enlaces y dominios…');
+    await animateProgress(54, 70, 680, 'Comprobando adjuntos y solicitudes de datos…');
+    await animateProgress(70, 84, 680, 'Aplicando las reglas I1–I11 y consultando la señal ML…');
+    setProgress(84, 'Esperando la respuesta del motor local…');
+  }
+
+  function addListItem(list, title, detail) {
+    var li = document.createElement('li');
+    var strong = document.createElement('strong');
+    strong.textContent = title;
     li.appendChild(strong);
-    if (detalle) {
-      const p = document.createElement('p');
-      p.textContent = detalle;
+    if (detail) {
+      var p = document.createElement('p');
+      p.textContent = detail;
       li.appendChild(p);
     }
-    lista.appendChild(li);
+    list.appendChild(li);
   }
 
-  function mostrarCanales(canales) {
-    const lista = document.getElementById('listaCanales');
-    lista.textContent = '';
-    const entradas = Object.entries(canales || {});
-    if (entradas.length === 0) {
-      agregarElemento(lista, 'Canales no disponibles', 'Consulte el portal institucional escribiendo la dirección directamente en el navegador.');
+  function showChannels(channels) {
+    var list = document.getElementById('listaCanales');
+    list.textContent = '';
+    var entries = Object.entries(channels || {});
+    if (!entries.length) {
+      addListItem(list, 'Canales no disponibles', 'Consulte el portal institucional escribiendo la dirección directamente en el navegador.');
       return;
     }
-    entradas.forEach(function (par) {
-      const valor = Array.isArray(par[1]) ? par[1].join(' / ') : String(par[1]);
-      agregarElemento(lista, par[0].replaceAll('_', ' '), valor);
+    entries.forEach(function (entry) {
+      var value = Array.isArray(entry[1]) ? entry[1].join(' / ') : String(entry[1]);
+      addListItem(list, entry[0].replaceAll('_', ' '), value);
     });
   }
 
-  async function narrar(texto) {
-    if (!window.VigiaVoz || typeof window.VigiaVoz.hablar !== 'function') return;
-    await new Promise(function (resolve) {
-      var terminado = false;
-      var finalizar = function () {
-        if (terminado) return;
-        terminado = true;
-        document.removeEventListener('vigia:voz-fin', finalizar);
-        resolve();
-      };
-      document.addEventListener('vigia:voz-fin', finalizar);
-      window.VigiaVoz.hablar(texto);
-      window.setTimeout(finalizar, Math.max(6000, texto.length * 140));
-    });
-  }
+  function renderResult(result) {
+    var panel = document.getElementById('veredictoPanel');
+    var list = document.getElementById('indicadoresEncontrados');
+    var phishing = result.es_phishing === true;
+    var indicators = Array.isArray(result.indicios) ? result.indicios : [];
 
-  async function narrarResultado(resultado) {
-    const indicios = resultado.indicios || [];
-    await narrar('El análisis ha finalizado. Le explicaré los hallazgos que detectó el motor de seguridad.');
-    if (indicios.length) {
-      for (let i = 0; i < indicios.length; i++) {
-        const item = indicios[i];
-        const texto = 'Indicio ' + (i + 1) + ' de ' + indicios.length + '. Código ' +
-          (item.codigo || '') + '. ' + (item.nombre || 'Señal detectada') + '. ' +
+    panel.classList.toggle('veredicto--alerta', phishing);
+    panel.classList.toggle('veredicto--limpio', !phishing);
+    document.getElementById('resultadoAnalisis').textContent = phishing
+      ? 'Posible phishing detectado'
+      : 'No se detectaron señales de phishing';
+    document.getElementById('resumenAnalisis').textContent = phishing
+      ? 'Vigía encontró ' + indicators.length + ' señal(es). La mascota te explicará cómo actuar.'
+      : 'No hubo coincidencias en las reglas. Esto no garantiza que el mensaje sea legítimo.';
+    document.getElementById('totalIndicios').textContent = indicators.length +
+      (indicators.length === 1 ? ' indicio detectado' : ' indicios detectados');
+
+    list.textContent = '';
+    if (indicators.length) {
+      indicators.forEach(function (item) {
+        addListItem(list, (item.codigo || '') + ' · ' + (item.nombre || 'Indicio'),
           (item.explicacion || '') +
-          (item.evidencia ? ' Evidencia encontrada: ' + item.evidencia : '') +
-          (item.consejo ? ' Recomendación: ' + item.consejo : '');
-        if (window.VigiaAvatar3D) window.VigiaAvatar3D.estado('alerta');
-        await narrar(texto);
-      }
-    } else {
-      await narrar('No se encontraron coincidencias determinísticas en las reglas I uno a I once. Esto no garantiza que el correo sea legítimo. Compruebe el remitente por un canal oficial.');
-    }
-    if (typeof resultado.probabilidad_ml === 'number') {
-      await narrar('El clasificador de aprendizaje automático produjo una estimación de ' +
-        resultado.probabilidad_ml + ' por ciento. Esta cifra es complementaria, no está calibrada y no decide por sí sola el veredicto.');
-    } else {
-      await narrar('El clasificador de aprendizaje automático no entregó una estimación disponible. El veredicto se basa en las reglas determinísticas.');
-    }
-    await narrar(resultado.guion_avatar || 'No abra enlaces ni entregue datos personales. Verifique siempre por canales oficiales.');
-  }
-
-  function mostrarResultado(resultado) {
-    const panel = document.getElementById('veredictoPanel');
-    const lista = document.getElementById('indicadoresEncontrados');
-    lista.textContent = '';
-
-    const esPhishing = resultado.es_phishing === true;
-    panel.classList.toggle('veredicto--alerta', esPhishing);
-    panel.classList.toggle('veredicto--limpio', !esPhishing);
-
-    document.getElementById('resultadoAnalisis').textContent =
-      esPhishing ? 'Se detectaron señales de posible phishing' : 'No se detectaron indicios determinísticos';
-    document.getElementById('resumenAnalisis').textContent =
-      resultado.regla_negocio || resultado.guion_avatar ||
-      'El resultado se basa en los indicios detectados por el motor local.';
-
-    if (resultado.indicios && resultado.indicios.length) {
-      resultado.indicios.forEach(function (indicio) {
-        const detalle = (indicio.explicacion || '') +
-          (indicio.evidencia ? ' Evidencia: ' + indicio.evidencia : '') +
-          (indicio.consejo ? ' Recomendación: ' + indicio.consejo : '');
-        agregarElemento(lista, (indicio.codigo || '') + ' · ' + (indicio.nombre || 'Indicio'), detalle);
+          (item.evidencia ? ' Evidencia: ' + item.evidencia : '') +
+          (item.consejo ? ' Recomendación: ' + item.consejo : ''));
       });
     } else {
-      agregarElemento(lista, 'Sin coincidencias en las reglas I1–I11', 'Esto no garantiza que el mensaje sea legítimo. Revise el remitente y verifique cualquier solicitud por un canal oficial.');
+      addListItem(list, 'Sin coincidencias en las reglas I1–I11',
+        'Esto no demuestra que el mensaje sea auténtico. Compruebe el remitente y cualquier solicitud por un canal oficial.');
     }
 
-    const probabilidad = resultado.probabilidad_ml;
     document.getElementById('probabilidadML').textContent =
-      typeof probabilidad === 'number'
-        ? probabilidad.toFixed(1) + ' % de probabilidad estimada por el clasificador'
-        : 'No disponible: el clasificador ONNX no pudo producir una estimación.';
-    document.getElementById('notaML').textContent =
-      resultado.probabilidad_ml_nota ||
-      'La estimación ML es complementaria y no sustituye las reglas de seguridad.';
-    document.getElementById('recomendacionesAnalisis').textContent =
-      resultado.guion_avatar ||
-      (esPhishing
-        ? 'No abra enlaces ni adjuntos. No comparta claves ni datos personales. Verifique por los canales oficiales.'
-        : 'Mantenga la precaución. La ausencia de indicios no demuestra que el mensaje sea auténtico.');
-    mostrarCanales(resultado.canales_oficiales);
+      typeof result.probabilidad_ml === 'number'
+        ? result.probabilidad_ml.toFixed(1) + ' % de estimación complementaria del clasificador'
+        : 'No disponible: el clasificador ONNX no produjo una estimación.';
+    document.getElementById('notaML').textContent = result.probabilidad_ml_nota ||
+      'La estimación ML es complementaria y no sustituye el resultado de las reglas determinísticas.';
+    document.getElementById('recomendacionesAnalisis').textContent = result.guion_avatar ||
+      'No abra enlaces ni adjuntos. No comparta claves ni códigos. Verifique cualquier trámite por canales oficiales.';
+    showChannels(result.canales_oficiales);
 
     if (window.VigiaAvatar && typeof window.VigiaAvatar.explicarAnalisis === 'function') {
-      window.VigiaAvatar.explicarAnalisis(resultado);
-    } else if (window.VigiaAvatar && typeof window.VigiaAvatar.explicar === 'function') {
-      window.VigiaAvatar.explicar({
-        es_phishing: esPhishing,
-        indicios: resultado.indicios || []
-      });
+      window.VigiaAvatar.explicarAnalisis(result);
     }
-    document.dispatchEvent(new CustomEvent('vigia:resultado', {
-      detail: { es_phishing: esPhishing }
-    }));
   }
 
-  async function analizarCorreo() {
-    if (analisisEnCurso) return;
-    const correo = window.correoVigiaActual;
-    if (!correo) {
-      document.getElementById('estadoAnalisis').textContent = 'Primero debe cargar y leer un correo en el paso 1.';
-      mostrarVentana(1);
+  async function analyzeEmail() {
+    if (analysisRunning) return;
+    var email = window.correoVigiaActual;
+    if (!email) {
+      setProgress(0, 'Primero debe cargar y leer un correo en el paso uno.');
+      showWindow(1);
       return;
     }
 
-    analisisEnCurso = true;
-    const boton = document.getElementById('btnAnalizar');
-    boton.disabled = true;
-    boton.textContent = 'Analizando…';
-    const lista = document.getElementById('listaComprobaciones');
-    lista.textContent = '';
-    agregarElemento(lista, 'Integridad del correo', 'El servidor comprobó la firma HMAC antes de analizar el mensaje.');
-    agregarElemento(lista, 'Reglas I1–I11', 'El motor revisará las señales determinísticas del correo.');
-    agregarElemento(lista, 'Clasificador ML', 'El modelo ONNX aportará una señal complementaria si está disponible.');
-    if (window.VigiaAvatar3D) window.VigiaAvatar3D.estado('analizando');
+    analysisRunning = true;
+    var button = document.getElementById('btnAnalizar');
+    var list = document.getElementById('listaComprobaciones');
+    button.disabled = true;
+    button.textContent = 'Analizando…';
+    list.textContent = '';
+    addListItem(list, 'Integridad del mensaje', 'El backend verificará la firma HMAC antes de continuar.');
+    addListItem(list, 'Reglas determinísticas I1–I11', 'El motor local comprobará indicadores en remitente, enlaces, texto y adjuntos.');
+    addListItem(list, 'Clasificador ONNX', 'Se consultará su disponibilidad; su salida es complementaria.');
+    setProgress(12, 'Preparando el objeto firmado…');
     document.dispatchEvent(new CustomEvent('vigia:analisis-paso', { detail: { estado: 'analizando' } }));
-    actualizarProgreso(0, 'Preparando la revisión segura…');
+    if (window.VigiaAvatar && typeof window.VigiaAvatar.expandir === 'function') window.VigiaAvatar.expandir();
+    if (window.VigiaVoz) window.VigiaVoz.detener();
 
     try {
-      const solicitudAnalisis = window.VigiaAPI.analizarCorreo(correo).then(
-        function (respuesta) { return { correcto: true, respuesta: respuesta }; },
-        function (error) { return { correcto: false, error: error }; }
+      // El backend procesa la solicitud completa. La barra acompaña visualmente
+      // las etapas mientras llega la respuesta, sin afirmar que hay streaming por regla.
+      var requestPromise = window.VigiaAPI.analizarCorreo(email).then(
+        function (response) { return { ok: true, response: response }; },
+        function (error) { return { ok: false, error: error }; }
       );
-      await animarProgreso(0, 22, 700, 'Leyendo el correo y comprobando su integridad…');
-      await animarProgreso(22, 48, 850, 'Revisando el remitente, el asunto y el contenido…');
-      await animarProgreso(48, 72, 900, 'Analizando enlaces, urgencia y solicitudes de datos…');
-      const estadoSolicitud = await solicitudAnalisis;
-      if (!estadoSolicitud.correcto) throw estadoSolicitud.error;
-      const respuesta = estadoSolicitud.respuesta;
-      const datosResultado = respuesta.resultado || {};
-      const indiciosEncontrados = datosResultado.indicios || [];
-      lista.textContent = '';
-      agregarElemento(lista, 'Integridad del correo', datosResultado.integridad_paso1_verificada
+      await animateAnalysisProgress();
+      var requestResult = await requestPromise;
+      if (!requestResult.ok) throw requestResult.error;
+
+      var response = requestResult.response;
+      var result = response.resultado || {};
+      var indicators = Array.isArray(result.indicios) ? result.indicios : [];
+      var model = result.modelo || {};
+
+      list.textContent = '';
+      addListItem(list, 'Integridad del mensaje', result.integridad_paso1_verificada
         ? 'Firma HMAC verificada correctamente.'
-        : 'No se confirmó la firma HMAC del mensaje.');
-      agregarElemento(lista, 'Reglas determinísticas I1–I11',
-        indiciosEncontrados.length + ' indicio(s) encontrados por el motor.');
-      if (indiciosEncontrados.length) {
-        indiciosEncontrados.forEach(function (item) {
-          agregarElemento(lista, (item.codigo || '') + ' · ' + (item.nombre || 'Indicio'),
-            (item.explicacion || '') +
-            (item.evidencia ? ' Evidencia: ' + item.evidencia : '') +
-            (item.consejo ? ' Recomendación: ' + item.consejo : ''));
-        });
-      } else {
-        agregarElemento(lista, 'Sin coincidencias I1–I11',
-          'No se detectaron indicios determinísticos; esto no garantiza legitimidad.');
+        : 'No se confirmó la firma HMAC.');
+      addListItem(list, 'Reglas determinísticas I1–I11',
+        indicators.length + (indicators.length === 1 ? ' indicio detectado.' : ' indicios detectados.'));
+      indicators.forEach(function (item) {
+        addListItem(list, (item.codigo || '') + ' · ' + (item.nombre || 'Indicio'),
+          (item.explicacion || '') +
+          (item.evidencia ? ' Evidencia: ' + item.evidencia : '') +
+          (item.consejo ? ' Recomendación: ' + item.consejo : ''));
+      });
+      if (!indicators.length) {
+        addListItem(list, 'Sin coincidencias determinísticas', 'La ausencia de coincidencias no demuestra legitimidad.');
       }
-      const modeloResultado = datosResultado.modelo || {};
-      agregarElemento(lista, 'Modelo ONNX',
-        modeloResultado.modelo_ml_disponible
-          ? 'Modelo disponible; su salida es complementaria.'
-          : 'Modelo no disponible; el análisis conserva el resultado por reglas.');
-      document.dispatchEvent(new CustomEvent('vigia:analisis-resultados', {
-        detail: { total: indiciosEncontrados.length, es_phishing: datosResultado.es_phishing === true }
+      addListItem(list, 'Modelo ONNX', model.modelo_ml_disponible
+        ? 'Disponible; la estimación es complementaria.'
+        : 'No disponible; se conserva el análisis basado en reglas.');
+
+      await animateProgress(84, 94, 420, 'Resultado recibido. Preparando la explicación…');
+      renderResult(result);
+      await animateProgress(94, 100, 360, 'Análisis completado.');
+      showWindow(4);
+      document.dispatchEvent(new CustomEvent('vigia:resultado', {
+        detail: { es_phishing: result.es_phishing === true }
       }));
-
-      if (window.VigiaAvatar3D) window.VigiaAvatar3D.estado(respuesta.resultado.es_phishing ? 'alerta' : 'acierto');
-
-      await animarProgreso(72, 96, 550, 'Preparando el resultado y las recomendaciones…');
-      mostrarResultado(respuesta.resultado);
-      actualizarProgreso(100, 'Análisis completado.');
-      mostrarVentana(4);
-      // La narración de hallazgos se realiza en el panel Vigía mediante explicarAnalisis().
     } catch (error) {
-      actualizarProgreso(0, 'No se pudo completar el análisis: ' + error.message);
+      setProgress(0, 'No se pudo completar el análisis: ' + (error && error.message ? error.message : 'error desconocido'));
     } finally {
-      analisisEnCurso = false;
-      boton.disabled = false;
-      boton.textContent = 'Iniciar análisis real';
+      analysisRunning = false;
+      button.disabled = false;
+      button.textContent = 'Iniciar análisis local →';
     }
   }
 
-  async function ejecutarAuditoriaPractica() {
-    const boton = document.getElementById('btnAuditoria');
-    const estado = document.getElementById('estadoAuditoria');
-    const contenedor = document.getElementById('resultadosAuditoria');
-    boton.disabled = true;
-    estado.textContent = 'Procesando los cinco correos de ejemplo…';
-    contenedor.textContent = '';
+  async function runPracticeAudit() {
+    var button = document.getElementById('btnAuditoria');
+    var status = document.getElementById('estadoAuditoria');
+    var output = document.getElementById('resultadosAuditoria');
+    button.disabled = true;
+    status.textContent = 'Procesando los correos de práctica…';
+    output.textContent = '';
 
     try {
-      const datos = await window.VigiaAPI.auditoriaPractica();
-      const tabla = document.createElement('table');
-      tabla.className = 'tabla-auditoria';
-      const thead = document.createElement('thead');
-      const filaCabecera = document.createElement('tr');
-      ['Archivo', 'Remitente', 'Veredicto', 'Indicios', 'SHA-256'].forEach(function (titulo) {
-        const th = document.createElement('th');
-        th.textContent = titulo;
-        filaCabecera.appendChild(th);
+      var data = await window.VigiaAPI.auditoriaPractica();
+      var table = document.createElement('table');
+      table.className = 'tabla-auditoria';
+      var head = document.createElement('thead');
+      var headerRow = document.createElement('tr');
+      ['Archivo', 'Remitente', 'Veredicto', 'Indicios', 'Huella SHA-256'].forEach(function (label) {
+        var th = document.createElement('th');
+        th.textContent = label;
+        headerRow.appendChild(th);
       });
-      thead.appendChild(filaCabecera);
-      tabla.appendChild(thead);
+      head.appendChild(headerRow);
+      table.appendChild(head);
 
-      const tbody = document.createElement('tbody');
-      (datos.resultados || []).forEach(function (resultado) {
-        const fila = document.createElement('tr');
+      var body = document.createElement('tbody');
+      (data.resultados || []).forEach(function (item) {
+        var row = document.createElement('tr');
         [
-          resultado.archivo,
-          resultado.remitente,
-          resultado.veredicto,
-          (resultado.indicios || []).join(', ') || 'Ninguno',
-          resultado.huella_sha256
-        ].forEach(function (valor) {
-          const td = document.createElement('td');
-          td.textContent = String(valor || '—');
-          fila.appendChild(td);
+          item.archivo, item.remitente, item.veredicto,
+          (item.indicios || []).join(', ') || 'Ninguno', item.huella_sha256
+        ].forEach(function (value) {
+          var td = document.createElement('td');
+          td.textContent = String(value || '—');
+          row.appendChild(td);
         });
-        tbody.appendChild(fila);
+        body.appendChild(row);
       });
-      tabla.appendChild(tbody);
-      contenedor.appendChild(tabla);
-
-      estado.textContent = 'Auditoría finalizada: ' + datos.total_probados + ' de ' + datos.total_esperados + ' archivos procesados.';
-      if (datos.errores && datos.errores.length) {
-        const p = document.createElement('p');
-        p.textContent = 'Archivos con errores: ' + datos.errores.map(function (e) {
-          return e.archivo + ' (' + e.error + ')';
+      table.appendChild(body);
+      output.appendChild(table);
+      status.textContent = 'Auditoría finalizada: ' + data.total_probados + ' de ' + data.total_esperados + ' correos procesados.';
+      if (data.errores && data.errores.length) {
+        var errors = document.createElement('p');
+        errors.textContent = 'Archivos con errores: ' + data.errores.map(function (item) {
+          return item.archivo + ' (' + item.error + ')';
         }).join('; ');
-        contenedor.appendChild(p);
+        output.appendChild(errors);
       }
     } catch (error) {
-      estado.textContent = error.message;
+      status.textContent = error.message || 'No se pudo completar la auditoría.';
     } finally {
-      boton.disabled = false;
+      button.disabled = false;
     }
   }
 
-  window.mostrarVentana = mostrarVentana;
-  window.analizarCorreo = analizarCorreo;
-  window.ejecutarAuditoriaPractica = ejecutarAuditoriaPractica;
+  document.querySelectorAll('[data-ir-paso]').forEach(function (button) {
+    button.addEventListener('click', function () { showWindow(Number(button.dataset.irPaso)); });
+  });
+
+  window.mostrarVentana = showWindow;
+  window.analizarCorreo = analyzeEmail;
+  window.ejecutarAuditoriaPractica = runPracticeAudit;
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { showWindow(1); });
+  } else {
+    showWindow(1);
+  }
 })();

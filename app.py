@@ -1,8 +1,4 @@
-"""Aplicación integrada de Vigía IESS.
-
-Sirve la interfaz web, expone la API REST y conecta el motor de análisis.
-Por defecto escucha solo en localhost para mantener el procesamiento local.
-"""
+"""Aplicación integrada de Vigía IESS."""
 from __future__ import annotations
 
 import os
@@ -22,8 +18,6 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 app.config["REQUIRE_SIGNED_CORREO"] = True
 
-# La firma evita que el objeto del paso 1 sea alterado antes del análisis.
-# En producción puede definirse VIGIA_INTEGRITY_SECRET (mínimo 32 caracteres).
 secret_configurado = os.environ.get("VIGIA_INTEGRITY_SECRET", "").strip()
 if secret_configurado and len(secret_configurado) < 32:
     raise RuntimeError("VIGIA_INTEGRITY_SECRET debe tener al menos 32 caracteres.")
@@ -34,19 +28,16 @@ app.register_blueprint(backend_bp)
 
 @app.get("/")
 def inicio():
-    """Entrega la aplicación web principal."""
     return send_from_directory(WEB_DIR, "index_integrado.html")
 
 
 @app.get("/assets/<path:filename>")
 def assets_web(filename: str):
-    """Sirve CSS y JavaScript del flujo web."""
     return send_from_directory(WEB_DIR, filename)
 
 
 @app.get("/accesibilidad/<path:filename>")
 def assets_accesibilidad(filename: str):
-    """Sirve los módulos locales de accesibilidad y el avatar."""
     return send_from_directory(ACCESSIBILITY_DIR, filename)
 
 
@@ -54,13 +45,17 @@ def assets_accesibilidad(filename: str):
 def cabeceras_seguridad(response):
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
-    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     response.headers.setdefault(
         "Content-Security-Policy",
-        "default-src 'self'; script-src 'self' 'unsafe-inline'; "
-        "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
-        "font-src 'self' data:; connect-src 'self'; object-src 'none'; "
-        "base-uri 'self'; frame-ancestors 'none'",
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://ajax.googleapis.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' data: https://fonts.gstatic.com; "
+        "img-src 'self' data: blob:; "
+        "connect-src 'self' https://ajax.googleapis.com; "
+        "frame-src 'self' https://www.google.com https://maps.google.com; "
+        "object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
     )
     return response
 
@@ -79,6 +74,6 @@ if __name__ == "__main__":
     print("=" * 68)
     print("VIGÍA IESS · Aplicación integrada")
     print(f"Interfaz: http://{host}:{port}")
-    print("Procesamiento local · No visita enlaces ni envía correos a terceros")
+    print("Procesamiento del correo local · No se visitan enlaces ni se ejecutan adjuntos")
     print("=" * 68)
     app.run(host=host, port=port, debug=False)

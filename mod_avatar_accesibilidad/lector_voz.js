@@ -1,178 +1,135 @@
+/* Motor de voz de Vigía: sin barra flotante duplicada. */
 (function () {
   'use strict';
-  var IDIOMA = 'es-EC', VELOCIDAD = 0.92, TONO = 1;
-  var RESPALDO = ['es-EC', 'es-MX', 'es-US', 'es-CO', 'es-ES'];
-  var SEL_PANTALLA = '#contenido-principal, main';
-  var SEL_CORREO = '[data-correo], #correo-leido';
 
-  var soportado = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
-  var cola = [], indice = 0, token = 0, hablando = false, pausado = false, actual = null;
-  var panel, btnPantalla, btnCorreo, btnPausa, btnStop, estadoEl;
+  var supported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+  var queue = [];
+  var index = 0;
+  var token = 0;
+  var speaking = false;
+  var paused = false;
+  var currentUtterance = null;
 
-  /* ---------- Voz: es-EC, y si no existe, la más parecida ---------- */
-  function elegirVoz() {
-    var voces = window.speechSynthesis.getVoices() || [];
-    var norm = function (v) { return (v.lang || '').replace('_', '-').toLowerCase(); };
-    for (var i = 0; i < RESPALDO.length; i++) {
-      for (var j = 0; j < voces.length; j++) {
-        if (norm(voces[j]) === RESPALDO[i].toLowerCase()) return voces[j];
+  function emit(name, detail) {
+    document.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
+  }
+
+  function chooseVoice() {
+    if (!supported) return null;
+    var voices = window.speechSynthesis.getVoices() || [];
+    var preferred = ['es-EC', 'es-MX', 'es-CO', 'es-US', 'es-ES'];
+    for (var i = 0; i < preferred.length; i++) {
+      for (var j = 0; j < voices.length; j++) {
+        if ((voices[j].lang || '').toLowerCase() === preferred[i].toLowerCase()) return voices[j];
       }
     }
-    for (var k = 0; k < voces.length; k++) {
-      if (norm(voces[k]).indexOf('es') === 0) return voces[k];
-    }
-    return null; // el navegador usará su voz por defecto con lang es-EC
+    return voices.find(function (voice) { return /^es([_-]|$)/i.test(voice.lang || ''); }) || null;
   }
 
-  /* ---------- Partir en frases (Chrome corta textos largos) ---------- */
-  function partir(texto) {
-    var limpio = String(texto || '').replace(/\s+/g, ' ').trim();
-    if (!limpio) return [];
-    var frases = limpio.match(/[^.!?;:]+[.!?;:]*/g) || [limpio];
-    var trozos = [], acum = '';
-    frases.forEach(function (f) {
-      if ((acum + f).length > 180 && acum) { trozos.push(acum.trim()); acum = ''; }
-      acum += f + ' ';
+  function splitText(text) {
+    var clean = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!clean) return [];
+    var sentences = clean.match(/[^.!?;:]+[.!?;:]*/g) || [clean];
+    var chunks = [];
+    var current = '';
+    sentences.forEach(function (sentence) {
+      var part = sentence.trim();
+      if (!part) return;
+      if ((current + ' ' + part).trim().length > 175 && current) {
+        chunks.push(current.trim());
+        current = '';
+      }
+      current = (current + ' ' + part).trim();
     });
-    if (acum.trim()) trozos.push(acum.trim());
-    return trozos;
+    if (current) chunks.push(current);
+    return chunks;
   }
 
-  function emitir(nombre, detalle) {
-    document.dispatchEvent(new CustomEvent(nombre, { detail: detalle || {} }));
+  function finish(runToken) {
+    if (runToken !== token) return;
+    speaking = false;
+    paused = false;
+    queue = [];
+    currentUtterance = null;
+    emit('vigia:voz-fin');
   }
 
-  function actualizarBotones() {
-    if (!panel) return;
-    btnPausa.disabled = !hablando;
-    btnStop.disabled = !hablando;
-    btnPausa.textContent = pausado ? '▶ Continuar' : '⏸ Pausar';
-    btnPausa.setAttribute('aria-label', pausado ? 'Continuar la lectura' : 'Pausar la lectura');
-    estadoEl.textContent = !hablando ? '' : (pausado ? 'En pausa' : 'Leyendo…');
-  }
+  function speakNext(runToken) {
+    if (runToken !== token) return;
+    if (index >= queue.length) { finish(runToken); return; }
 
-  function siguiente(t) {
-    if (t !== token) return;                       // lectura cancelada
-    if (indice >= cola.length) { terminar(t); return; }
-    var u = new SpeechSynthesisUtterance(cola[indice]);
-    u.lang = IDIOMA; u.rate = VELOCIDAD; u.pitch = TONO;
-    var voz = elegirVoz(); if (voz) u.voice = voz;
-    u.onstart = function () { emitir('vigia:voz-fragmento', { texto: cola[indice] }); };
-    u.onend = function () { indice++; siguiente(t); };
-    u.onerror = function (e) {
-      if (e && (e.error === 'canceled' || e.error === 'interrupted')) return;
-      terminar(t);
+    var phrase = queue[index];
+    var utterance = new SpeechSynthesisUtterance(phrase);
+    utterance.lang = 'es-EC';
+    utterance.rate = 0.94;
+    utterance.pitch = 1;
+    var voice = chooseVoice();
+    if (voice) utterance.voice = voice;
+    utterance.onstart = function () { emit('vigia:voz-fragmento', { texto: phrase, indice: index + 1, total: queue.length }); };
+    utterance.onend = function () {
+      if (runToken !== token) return;
+      index += 1;
+      speakNext(runToken);
     };
-    actual = u;                                    // evita que el navegador lo recoja antes de hablar
-    window.speechSynthesis.speak(u);
+    utterance.onerror = function (event) {
+      if (runToken !== token) return;
+      if (event && (event.error === 'canceled' || event.error === 'interrupted')) return;
+      index += 1;
+      speakNext(runToken);
+    };
+    currentUtterance = utterance;
+    window.speechSynthesis.speak(utterance);
   }
 
-  function terminar(t) {
-    if (t !== token) return;
-    hablando = false; pausado = false; cola = []; actual = null;
-    actualizarBotones();
-    emitir('vigia:voz-fin');
+  function stop(silent) {
+    var wasSpeaking = speaking;
+    token += 1;
+    if (supported) window.speechSynthesis.cancel();
+    speaking = false;
+    paused = false;
+    queue = [];
+    currentUtterance = null;
+    if (wasSpeaking && !silent) emit('vigia:voz-fin');
   }
 
-  function hablar(texto) {
-    if (!soportado) { avisarNoSoportado(); emitir('vigia:voz-fin'); return; }
-    detener(true);
-    cola = partir(texto);
-    if (!cola.length) { emitir('vigia:voz-fin'); return; }
-    token++; indice = 0; hablando = true; pausado = false;
-    actualizarBotones();
-    emitir('vigia:voz-inicio');
-    siguiente(token);
-  }
-
-  function pausar() {
-    if (!hablando || pausado) return;
-    window.speechSynthesis.pause(); pausado = true; actualizarBotones();
-  }
-  function reanudar() {
-    if (!hablando || !pausado) return;
-    window.speechSynthesis.resume(); pausado = false; actualizarBotones();
-  }
-  function detener(silencioso) {
-    var estaba = hablando;
-    token++;                                       // invalida callbacks pendientes
-    if (soportado) window.speechSynthesis.cancel();
-    hablando = false; pausado = false; cola = []; actual = null;
-    actualizarBotones();
-    if (estaba && !silencioso) emitir('vigia:voz-fin');
-  }
-
-  /* ---------- Qué se lee ---------- */
-  function textoDe(selector) {
-    var el = document.querySelector(selector);
-    if (!el) return '';
-    var copia = el.cloneNode(true);
-    copia.querySelectorAll('script,style,[aria-hidden="true"],.vg-barra,.vg-voz,[hidden]')
-      .forEach(function (n) { n.remove(); });
-    return copia.textContent.replace(/\s+/g, ' ').trim();
-  }
-
-  function escucharPantalla() {
-    var t = textoDe(SEL_PANTALLA);
-    hablar(t || 'No encontré texto para leer en esta pantalla.');
-  }
-  function leerCorreo() {
-    var t = textoDe(SEL_CORREO);
-    hablar(t || 'Todavía no hay un correo cargado. Primero suba un correo en el paso uno.');
-  }
-
-  /* ---------- Panel de botones (parte inferior, siempre visible) ---------- */
-  function boton(texto, etiqueta, fn) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'vg-btn vg-btn--voz';
-    b.textContent = texto; b.setAttribute('aria-label', etiqueta); b.title = etiqueta;
-    b.addEventListener('click', fn);
-    return b;
-  }
-
-  function avisarNoSoportado() {
-    if (estadoEl) estadoEl.textContent = 'Este navegador no puede leer en voz alta. Use Chrome o Edge.';
-  }
-
-  function construir() {
-    panel = document.createElement('div');
-    panel.className = 'vg-voz';
-    panel.setAttribute('role', 'region');
-    panel.setAttribute('aria-label', 'Lector de voz');
-
-    btnPantalla = boton('🔊 Escuchar pantalla', 'Escuchar el contenido de la pantalla', escucharPantalla);
-    btnCorreo = boton('✉ Leer correo', 'Leer en voz alta el correo cargado', leerCorreo);
-    btnPausa = boton('⏸ Pausar', 'Pausar la lectura', function () { pausado ? reanudar() : pausar(); });
-    btnStop = boton('⏹ Detener', 'Detener la lectura', function () { detener(false); });
-    estadoEl = document.createElement('span');
-    estadoEl.className = 'vg-voz__estado';
-    estadoEl.setAttribute('role', 'status');
-    estadoEl.setAttribute('aria-live', 'polite');
-
-    [btnPantalla, btnCorreo, btnPausa, btnStop, estadoEl].forEach(function (e) { panel.appendChild(e); });
-    document.body.appendChild(panel);
-    document.body.classList.add('vigia-con-voz');
-    actualizarBotones();
-    if (!soportado) avisarNoSoportado();
-  }
-
-  function iniciar() {
-    construir();
-    // Las voces cargan de forma asíncrona en algunos navegadores
-    if (soportado && window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = function () { elegirVoz(); };
+  function speak(text) {
+    if (!supported) {
+      emit('vigia:voz-no-disponible', { mensaje: 'Este navegador no admite lectura de voz.' });
+      emit('vigia:voz-fin');
+      return;
     }
-    // Tecla Escape = detener (útil si algo suena sin querer)
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && hablando) detener(false); });
-    // Al cerrar o recargar la página, que no siga hablando
-    window.addEventListener('beforeunload', function () { if (soportado) window.speechSynthesis.cancel(); });
+    stop(true);
+    queue = splitText(text);
+    if (!queue.length) { emit('vigia:voz-fin'); return; }
+    token += 1;
+    index = 0;
+    speaking = true;
+    paused = false;
+    emit('vigia:voz-inicio', { total: queue.length });
+    speakNext(token);
+  }
+
+  function pause() {
+    if (!supported || !speaking || paused) return;
+    window.speechSynthesis.pause();
+    paused = true;
+  }
+
+  function resume() {
+    if (!supported || !speaking || !paused) return;
+    window.speechSynthesis.resume();
+    paused = false;
   }
 
   window.VigiaVoz = {
-    hablar: hablar, pausar: pausar, reanudar: reanudar, detener: function () { detener(false); },
-    estaHablando: function () { return hablando; }
+    hablar: speak,
+    pausar: pause,
+    reanudar: resume,
+    detener: function () { stop(false); },
+    estaHablando: function () { return speaking; },
+    estaPausado: function () { return paused; },
+    disponible: function () { return supported; }
   };
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
-  else iniciar();
+  window.addEventListener('beforeunload', function () { if (supported) window.speechSynthesis.cancel(); });
 })();
