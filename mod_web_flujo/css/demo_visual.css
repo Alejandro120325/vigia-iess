@@ -1,0 +1,336 @@
+/* ========== LAYOUT MAIN + ASIDE ========== */
+.layout-principal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  width: min(100% - 32px, 1280px);
+  margin: 28px auto 42px;
+  align-items: flex-start;
+}
+.layout-principal main {
+  flex: 1 1 600px;
+  min-width: 0;
+  margin: 0;
+  width: auto;
+}
+.layout-principal main > section {
+  margin-bottom: 22px;
+  width: 100%;
+  padding: clamp(22px, 4vw, 34px);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+}
+
+/* ========== ASIDE ========== */
+.aside-pasos {
+  flex: 0 1 340px;
+  position: sticky;
+  top: 20px;
+  padding: 22px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+}
+.aside-pasos h2 { margin: 0 0 6px; color: var(--azul); font-size: 1.15rem; }
+.aside-pasos > p { margin: 0 0 14px; font-size: .92rem; }
+.aside-pasos__lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.aside-paso {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  padding: 12px; border: 1px solid var(--borde); border-radius: 10px;
+  background: var(--suave);
+  transition: border-color .25s, background .25s, transform .25s;
+}
+.aside-paso.activo { border-color: var(--dorado); background: #fff8e1; transform: translateX(-2px); }
+.aside-paso.completado { border-color: #31835b; background: #e8f5e9; }
+.aside-paso__num {
+  flex: none; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--azul); color: #fff; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.aside-paso.completado .aside-paso__num { background: #31835b; }
+.aside-paso__txt { flex: 1 1 140px; min-width: 0; }
+.aside-paso__txt strong { display: block; font-size: .95rem; color: var(--azul); }
+.aside-paso__txt span { font-size: .82rem; line-height: 1.35; }
+.aside-paso__btn {
+  flex: none; min-height: 34px; padding: 6px 10px; font-size: .85rem;
+  background: transparent; color: var(--azul); border: 1px solid var(--borde);
+}
+.aside-paso__btn:hover:not(:disabled) { background: var(--azul); color: #fff; }
+.aside-pasos__aviso {
+  margin-top: 14px; padding: 10px 12px;
+  border-left: 4px solid var(--dorado); border-radius: 8px;
+  background: #fff8e1; font-size: .85rem;
+}
+
+/* ========== TARJETAS ========== */
+.tarjetas-lista { display: flex; flex-direction: column; gap: 10px; margin: 10px 0 0; padding: 0; }
+.tarjeta {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px; border: 1px solid var(--borde);
+  border-left: 4px solid var(--borde); border-radius: 10px;
+  background: var(--superficie);
+  animation: tarjetaEntrada .35s ease both;
+}
+@keyframes tarjetaEntrada { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.tarjeta__icono { flex: none; font-size: 1.4rem; line-height: 1; }
+.tarjeta__cuerpo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tarjeta__cuerpo strong { color: var(--azul); font-size: .98rem; }
+.tarjeta__cuerpo span { font-size: .88rem; }
+.tarjeta--alerta { border-left-color: #c84a4a; background: #fdf0f0; }
+.tarjeta--ok { border-left-color: #31835b; background: #eef8f2; }
+.tarjeta--pendiente { border-left-color: #b0b8c1; background: var(--suave); }
+.tarjeta--neutra { border-left-color: #7a8896; }
+.tarjeta--analizando { border-left-color: #c49a48; background: #fff8e1; }
+
+/* ========== BARRA DE RIESGO EN VIVO ========== */
+.riesgo-vivo {
+  margin: 16px 0 22px; padding: 14px 16px;
+  border: 1px solid var(--borde); border-radius: 10px; background: var(--superficie);
+}
+.riesgo-vivo__cabecera {
+  display: flex; justify-content: space-between;
+  font-weight: 700; color: var(--azul); margin-bottom: 8px;
+}
+.riesgo-vivo__pista { height: 16px; border-radius: 999px; background: #e4e9ee; overflow: hidden; }
+.riesgo-vivo__relleno {
+  height: 100%; width: 0%; border-radius: 999px;
+  background: #31835b;
+  transition: width .5s ease, background-color .4s ease;
+}
+.riesgo-vivo__relleno.nivel-medio { background: #e0a800; }
+.riesgo-vivo__relleno.nivel-alto  { background: #c84a4a; animation: pulsoRiesgo 1.2s infinite; }
+@keyframes pulsoRiesgo {
+  0%,100% { box-shadow: 0 0 0 0 rgba(200,74,74,.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(200,74,74,0); }
+}
+
+/* ========== GAUGE ========== */
+.veredicto-gauge { position: relative; width: 220px; height: 220px; margin: 12px auto; }
+.gauge { width: 100%; height: 100%; transform: rotate(-90deg); }
+.gauge__pista { fill: none; stroke: #e4e9ee; stroke-width: 16; }
+.gauge__relleno {
+  fill: none; stroke: #31835b; stroke-width: 16; stroke-linecap: round;
+  stroke-dasharray: 502; stroke-dashoffset: 502;
+  transition: stroke-dashoffset 1.2s ease, stroke .4s ease;
+}
+.gauge__centro {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.gauge__valor { font-size: 2.2rem; font-weight: 800; color: var(--azul); }
+.gauge__etiqueta { font-size: .85rem; text-transform: uppercase; letter-spacing: 1px; color: #7a8896; }
+.veredicto-texto { text-align: center; font-size: 1.35rem; margin-top: 8px; }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 900px) {
+  .layout-principal { flex-direction: column; }
+  .aside-pasos { position: static; width: 100%; flex: 1 1 auto; }
+}
+/* ========== CANALES OFICIALES (FLEXBOX) ========== */
+.canales-oficiales {
+  margin-top: 24px;
+}
+.canales-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+}
+.canales-grid li {
+  flex: 1 1 calc(50% - 12px); /* 2 columnas en pantallas grandes */
+  background: var(--suave);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--borde);
+  font-size: 0.95rem;
+  color: var(--texto);
+}
+@media (max-width: 600px) {
+  .canales-grid li {
+    flex: 1 1 100%; /* 1 columna en celulares */
+  }
+}
+/* ========== SECCIONES DESPLEGABLES (INDICADORES Y CANALES) ========== */
+.seccion-desplegable {
+  margin-top: 16px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  background: var(--superficie);
+  overflow: hidden;
+}
+
+.boton-desplegable {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--suave);
+  color: var(--azul);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  list-style: none; /* Quita la flecha por defecto */
+  transition: background 0.2s;
+}
+
+.boton-desplegable::-webkit-details-marker {
+  display: none; /* Quita flecha en Chrome/Safari */
+}
+
+.boton-desplegable:hover {
+  background: #e2e8f0;
+}
+
+.boton-desplegable::after {
+  content: '▼';
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+}
+
+/* Cuando se abre, la flecha gira */
+details[open] .boton-desplegable::after {
+  transform: rotate(180deg);
+}
+
+/* Ajuste de la lista de canales */
+.canales-oficiales .canales-grid, 
+.seccion-desplegable .canales-grid {
+  padding: 16px 20px;
+  margin: 0;
+  background: var(--superficie);
+  border-top: 1px solid var(--borde);
+}
+
+/* Dashboard visual incorporado desde la integración anterior. */
+/* Componentes visuales integrados desde la propuesta del equipo, adaptados al tema institucional actual. */
+.vigia-visual-result {
+  display: grid;
+  grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);
+  align-items: center;
+  gap: 1.25rem;
+  margin: 0 0 1rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--line, #dbe4ea);
+  border-radius: 16px;
+  background: var(--surface, #fff);
+  box-shadow: 0 8px 22px rgba(16, 43, 70, .055);
+}
+.vigia-visual-gauge-wrap { display: grid; place-items: center; }
+.vigia-visual-gauge {
+  --vigia-risk: 0%;
+  width: clamp(142px, 18vw, 184px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  position: relative;
+  border-radius: 50%;
+  background: conic-gradient(var(--risk-color, #26845b) var(--vigia-risk), #e7edf0 0);
+  transition: background 1.1s ease;
+}
+.vigia-visual-gauge::before {
+  content: "";
+  position: absolute;
+  inset: 11px;
+  border-radius: 50%;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #dbe4ea);
+}
+.vigia-visual-gauge-center {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .12rem;
+  text-align: center;
+}
+.vigia-visual-value { color: var(--navy, #102b46); font: 800 clamp(1.6rem, 3vw, 2.1rem)/1 Arial, Helvetica, sans-serif; letter-spacing: -.04em; }
+.vigia-visual-gauge-label { color: var(--muted, #647689); font-size: .68rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.vigia-visual-gauge.is-low { --risk-color: #26845b; }
+.vigia-visual-gauge.is-medium { --risk-color: #c18a24; }
+.vigia-visual-gauge.is-high { --risk-color: #c84a4a; }
+.vigia-visual-info { min-width: 0; }
+.vigia-visual-eyebrow { margin: 0 0 .35rem; color: var(--muted, #647689); font-size: .66rem; font-weight: 800; letter-spacing: .14em; }
+.vigia-visual-title { margin: 0; color: var(--navy, #102b46); font: 800 clamp(1.1rem, 2vw, 1.45rem)/1.25 Arial, Helvetica, sans-serif; }
+.vigia-visual-description { margin: .45rem 0 0; color: var(--ink, #283b4c); font-size: .91rem; line-height: 1.55; }
+.vigia-visual-note { max-width: 66ch; margin: .65rem 0 0; color: var(--muted, #647689); font-size: .72rem; line-height: 1.45; }
+.vigia-visual-checks { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem; }
+.vigia-visual-check { display: flex; align-items: flex-start; gap: .6rem; min-width: 0; padding: .72rem .8rem; border: 1px solid var(--line, #dbe4ea); border-radius: 11px; background: var(--soft, #f4f7f9); }
+.vigia-visual-check-dot { flex: 0 0 auto; width: 1.45rem; height: 1.45rem; display: grid; place-items: center; border-radius: 50%; color: #647689; background: #e4ebef; font-size: .9rem; line-height: 1; }
+.vigia-visual-check-content { display: grid; gap: .16rem; min-width: 0; }
+.vigia-visual-check-content strong { color: var(--navy, #102b46); font-size: .76rem; line-height: 1.3; }
+.vigia-visual-check-content span { color: var(--muted, #647689); font-size: .7rem; line-height: 1.35; overflow-wrap: anywhere; }
+.vigia-visual-check.is-ok .vigia-visual-check-dot { color: #176943; background: #dff2e7; }
+.vigia-visual-check.is-warning .vigia-visual-check-dot { color: #8a5a10; background: #fff0cf; }
+.vigia-live-risk { margin: .85rem 0 1rem; padding: .85rem 1rem; border: 1px solid var(--line, #dbe4ea); border-radius: 12px; background: var(--soft, #f4f7f9); }
+.vigia-live-risk-head { display: flex; align-items: center; justify-content: space-between; gap: .7rem; color: var(--navy, #102b46); font-size: .8rem; }
+.vigia-live-risk-head span { color: var(--muted, #647689); font-size: .72rem; }
+.vigia-live-risk-track { height: 7px; margin-top: .65rem; overflow: hidden; border-radius: 999px; background: #e1e8ec; }
+.vigia-live-risk-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #26845b, #c18a24, #c84a4a); transition: width .45s ease; }
+.vigia-live-risk-track span.is-active { animation:none; }
+.vigia-live-risk p { margin: .45rem 0 0; color: var(--muted, #647689); font-size: .69rem; line-height: 1.4; }
+@keyframes vigia-scan { from { opacity: .55; transform: scaleX(.72); transform-origin: left; } to { opacity: 1; transform: scaleX(1); transform-origin: left; } }
+html.tema-oscuro .vigia-visual-result { background: #17293a; border-color: #334a5e; box-shadow: none; }
+html.tema-oscuro .vigia-visual-gauge::before { background: #17293a; border-color: #334a5e; }
+html.tema-oscuro .vigia-visual-value, html.tema-oscuro .vigia-visual-title, html.tema-oscuro .vigia-visual-check-content strong, html.tema-oscuro .vigia-live-risk-head { color: #e5edf4; }
+html.tema-oscuro .vigia-visual-description { color: #c5d2dd; }
+html.tema-oscuro .vigia-visual-note, html.tema-oscuro .vigia-visual-gauge-label, html.tema-oscuro .vigia-visual-check-content span, html.tema-oscuro .vigia-live-risk p, html.tema-oscuro .vigia-live-risk-head span { color: #aebdca; }
+html.tema-oscuro .vigia-visual-check, html.tema-oscuro .vigia-live-risk { background: #1b2b3b; border-color: #334a5e; }
+html.tema-oscuro .vigia-live-risk-track { background: #304455; }
+@media (max-width: 680px) {
+  .vigia-visual-result { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 1rem; }
+  .vigia-visual-gauge { width: 150px; }
+  .vigia-visual-checks { grid-template-columns: 1fr; width: 100%; }
+  .vigia-visual-check { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vigia-visual-gauge, .vigia-live-risk-track span { transition: none; animation: none !important; }
+}
+
+/* El estado técnico se conserva en la ventana de análisis, no en la cabecera institucional. */
+.site-header .header-tag { display: none !important; }
+
+
+/* Ajustes para la interfaz institucional clara y la versión oscura. */
+html.tema-oscuro .aside-pasos { color:#e7edf4; background:#1a2835; border-color:#364b5d; }
+html.tema-oscuro .aside-pasos h2, html.tema-oscuro .aside-paso__txt strong { color:#e7edf4; }
+html.tema-oscuro .aside-paso { color:#d8e2ea; background:#202f3e; border-color:#364b5d; }
+html.tema-oscuro .aside-paso.activo { background:#3d3425; border-color:#a78648; }
+html.tema-oscuro .aside-paso.completado { background:#203a2d; border-color:#38644a; }
+html.tema-oscuro .aside-pasos__aviso { color:#eadbb9; background:#3b3428; border-left-color:#c7a66a; }
+html.tema-oscuro .tarjeta { color:#e7edf4; background:#202f3e; border-color:#364b5d; }
+html.tema-oscuro .tarjeta__cuerpo strong { color:#e7edf4; }
+html.tema-oscuro .tarjeta__cuerpo span { color:#c3d0da; }
+html.tema-oscuro .tarjeta--ok { background:#203a2d; }
+html.tema-oscuro .tarjeta--alerta { background:#3b2629; }
+html.tema-oscuro .tarjeta--analizando { background:#3d3425; }
+
+@media (max-width:900px) {
+  .layout-principal { flex-direction:column; }
+  .aside-pasos { position:static; width:100%; flex:1 1 auto; }
+}
+@media (max-width:650px) {
+  .aside-paso { gap:8px; }
+  .aside-paso__txt { flex-basis:100px; }
+  .aside-paso__btn { width:auto; }
+  .vigia-visual-result { grid-template-columns:1fr; justify-items:center; text-align:center; }
+  .vigia-visual-checks { grid-template-columns:1fr; width:100%; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .tarjeta, .vigia-visual-gauge, .vigia-live-risk-track span { animation:none !important; transition:none !important; }
+}
+
+
+/* La segunda barra refleja el avance real de la comprobación, no una animación decorativa. */
+.vigia-live-risk-track { height:8px; background:#e1e8ec; }
+.vigia-live-risk-track span { width:0%; transition:width .35s linear; }
+.vigia-live-risk-track span.is-active { animation:none; }
+@media (prefers-reduced-motion: reduce) {
+  .vigia-live-risk-track span { transition:none; }
+}

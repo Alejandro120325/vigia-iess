@@ -36,3 +36,9 @@ uploads/
 # Archivos del sistema operativo
 .DS_Store
 Thumbs.db
+**/.venv/
+!.env.example
+node_modules/
+_backups/
+**/_backups/
+*.bak

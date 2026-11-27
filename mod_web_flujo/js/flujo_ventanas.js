@@ -26,9 +26,28 @@
     var progress = document.getElementById('barraProgreso');
     var label = document.getElementById('porcentajeProgreso');
     var status = document.getElementById('estadoAnalisis');
-    if (progress) progress.value = value;
-    if (label) label.textContent = value + ' %';
+    var liveBar = document.getElementById('vigia-live-risk-bar');
+    var liveState = document.getElementById('vigia-live-risk-state');
+    var safeValue = Math.max(0, Math.min(100, Number(value) || 0));
+
+    if (progress) progress.value = safeValue;
+    if (label) label.textContent = safeValue + ' %';
     if (status) status.textContent = text;
+    if (liveBar) {
+      liveBar.style.width = safeValue + '%';
+      liveBar.setAttribute('aria-valuenow', String(safeValue));
+    }
+    if (liveState) {
+      var phase = 'Preparado';
+      if (analysisRunning) {
+        if (/esperando/i.test(text || '')) phase = 'Esperando respuesta';
+        else if (safeValue >= 94) phase = 'Finalizando';
+        else phase = 'Analizando';
+      }
+      if (/no se pudo completar/i.test(text || '')) phase = 'Error';
+      else if (safeValue >= 100) phase = 'Completado';
+      liveState.textContent = phase + ' · ' + safeValue + ' %';
+    }
   }
 
   function wait(milliseconds) {
@@ -52,12 +71,12 @@
   }
 
   async function animateAnalysisProgress() {
-    setProgress(5, 'Preparando el correo para la revisión…');
-    await animateProgress(5, 18, 620, 'Verificando la integridad del mensaje…');
-    await animateProgress(18, 36, 680, 'Revisando remitente, asunto y contenido…');
-    await animateProgress(36, 54, 680, 'Inspeccionando enlaces y dominios…');
-    await animateProgress(54, 70, 680, 'Comprobando adjuntos y solicitudes de datos…');
-    await animateProgress(70, 84, 680, 'Aplicando las reglas I1–I11 y consultando la señal ML…');
+    setProgress(4, 'Preparando el correo para la revisión…');
+    await animateProgress(4, 18, 4000, 'Verificando la integridad del mensaje…');
+    await animateProgress(18, 34, 4800, 'Revisando remitente, asunto y contenido…');
+    await animateProgress(34, 52, 5200, 'Inspeccionando enlaces y dominios…');
+    await animateProgress(52, 68, 5200, 'Comprobando adjuntos y solicitudes de datos…');
+    await animateProgress(68, 84, 5800, 'Aplicando las reglas I1–I11 y consultando la señal ML…');
     setProgress(84, 'Esperando la respuesta del motor local…');
   }
 
@@ -72,20 +91,6 @@
       li.appendChild(p);
     }
     list.appendChild(li);
-  }
-
-  function showChannels(channels) {
-    var list = document.getElementById('listaCanales');
-    list.textContent = '';
-    var entries = Object.entries(channels || {});
-    if (!entries.length) {
-      addListItem(list, 'Canales no disponibles', 'Consulte el portal institucional escribiendo la dirección directamente en el navegador.');
-      return;
-    }
-    entries.forEach(function (entry) {
-      var value = Array.isArray(entry[1]) ? entry[1].join(' / ') : String(entry[1]);
-      addListItem(list, entry[0].replaceAll('_', ' '), value);
-    });
   }
 
   function renderResult(result) {
@@ -126,7 +131,6 @@
       'La estimación ML es complementaria y no sustituye el resultado de las reglas determinísticas.';
     document.getElementById('recomendacionesAnalisis').textContent = result.guion_avatar ||
       'No abra enlaces ni adjuntos. No comparta claves ni códigos. Verifique cualquier trámite por canales oficiales.';
-    showChannels(result.canales_oficiales);
 
     if (window.VigiaAvatar && typeof window.VigiaAvatar.explicarAnalisis === 'function') {
       window.VigiaAvatar.explicarAnalisis(result);
@@ -151,7 +155,7 @@
     addListItem(list, 'Integridad del mensaje', 'El backend verificará la firma HMAC antes de continuar.');
     addListItem(list, 'Reglas determinísticas I1–I11', 'El motor local comprobará indicadores en remitente, enlaces, texto y adjuntos.');
     addListItem(list, 'Clasificador ONNX', 'Se consultará su disponibilidad; su salida es complementaria.');
-    setProgress(12, 'Preparando el objeto firmado…');
+    setProgress(4, 'Preparando el objeto firmado…');
     document.dispatchEvent(new CustomEvent('vigia:analisis-paso', { detail: { estado: 'analizando' } }));
     if (window.VigiaAvatar && typeof window.VigiaAvatar.expandir === 'function') window.VigiaAvatar.expandir();
     if (window.VigiaVoz) window.VigiaVoz.detener();
@@ -191,9 +195,9 @@
         ? 'Disponible; la estimación es complementaria.'
         : 'No disponible; se conserva el análisis basado en reglas.');
 
-      await animateProgress(84, 94, 420, 'Resultado recibido. Preparando la explicación…');
+      await animateProgress(84, 94, 1700, 'Resultado recibido. Preparando la explicación…');
       renderResult(result);
-      await animateProgress(94, 100, 360, 'Análisis completado.');
+      await animateProgress(94, 100, 1200, 'Análisis completado.');
       showWindow(4);
       document.dispatchEvent(new CustomEvent('vigia:resultado', {
         detail: { es_phishing: result.es_phishing === true }
@@ -207,65 +211,12 @@
     }
   }
 
-  async function runPracticeAudit() {
-    var button = document.getElementById('btnAuditoria');
-    var status = document.getElementById('estadoAuditoria');
-    var output = document.getElementById('resultadosAuditoria');
-    button.disabled = true;
-    status.textContent = 'Procesando los correos de práctica…';
-    output.textContent = '';
-
-    try {
-      var data = await window.VigiaAPI.auditoriaPractica();
-      var table = document.createElement('table');
-      table.className = 'tabla-auditoria';
-      var head = document.createElement('thead');
-      var headerRow = document.createElement('tr');
-      ['Archivo', 'Remitente', 'Veredicto', 'Indicios', 'Huella SHA-256'].forEach(function (label) {
-        var th = document.createElement('th');
-        th.textContent = label;
-        headerRow.appendChild(th);
-      });
-      head.appendChild(headerRow);
-      table.appendChild(head);
-
-      var body = document.createElement('tbody');
-      (data.resultados || []).forEach(function (item) {
-        var row = document.createElement('tr');
-        [
-          item.archivo, item.remitente, item.veredicto,
-          (item.indicios || []).join(', ') || 'Ninguno', item.huella_sha256
-        ].forEach(function (value) {
-          var td = document.createElement('td');
-          td.textContent = String(value || '—');
-          row.appendChild(td);
-        });
-        body.appendChild(row);
-      });
-      table.appendChild(body);
-      output.appendChild(table);
-      status.textContent = 'Auditoría finalizada: ' + data.total_probados + ' de ' + data.total_esperados + ' correos procesados.';
-      if (data.errores && data.errores.length) {
-        var errors = document.createElement('p');
-        errors.textContent = 'Archivos con errores: ' + data.errores.map(function (item) {
-          return item.archivo + ' (' + item.error + ')';
-        }).join('; ');
-        output.appendChild(errors);
-      }
-    } catch (error) {
-      status.textContent = error.message || 'No se pudo completar la auditoría.';
-    } finally {
-      button.disabled = false;
-    }
-  }
-
   document.querySelectorAll('[data-ir-paso]').forEach(function (button) {
     button.addEventListener('click', function () { showWindow(Number(button.dataset.irPaso)); });
   });
 
   window.mostrarVentana = showWindow;
   window.analizarCorreo = analyzeEmail;
-  window.ejecutarAuditoriaPractica = runPracticeAudit;
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { showWindow(1); });
   } else {

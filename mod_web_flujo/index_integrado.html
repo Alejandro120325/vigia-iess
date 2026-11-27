@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#102b46">
   <meta name="description" content="Vigía IESS: herramienta educativa para reconocer correos sospechosos de forma segura.">
   <title>Vigía IESS | Protección digital</title>
-  <link rel="preconnect" href="https://ajax.googleapis.com">
   <link rel="stylesheet" href="/assets/css/estilos_intitucionales.css">
+  <link rel="stylesheet" href="/assets/css/demo_visual.css">
   <link rel="stylesheet" href="/accesibilidad/css/accesibilidad.css">
 </head>
 <body>
@@ -42,9 +42,9 @@
       </div>
     </div>
     <div class="hero-copy">
-      <p class="eyebrow">SEGURIDAD INTELIGENTE · CULTURA CONSCIENTE</p>
-      <h1>Antes de confiar en un correo, <span>verifícalo.</span></h1>
-      <p>Revisa mensajes sospechosos sin abrir enlaces ni ejecutar archivos adjuntos. Vigía te muestra qué encontró y cómo actuar.</p>
+      <p class="eyebrow">HERRAMIENTA DE PREVENCIÓN DIGITAL</p>
+      <h1>Revisa tus correos antes de responder.</h1>
+      <p>Sube un PDF o EML, revisa el mensaje y conoce el resultado de forma segura.</p>
     </div>
   </header>
 
@@ -63,6 +63,7 @@
     </button>
   </nav>
 
+  <div class="layout-principal">
   <main id="contenido-principal">
     <div class="main-intro">
       <div>
@@ -202,36 +203,24 @@
 
       <details class="result-technical">
         <summary>Ver evidencias y detalles técnicos</summary>
-        <div class="content-block">
-          <div class="block-heading"><div><p class="eyebrow eyebrow-dark">EVIDENCIAS</p><h3>Indicadores encontrados</h3></div></div>
-          <ul id="indicadoresEncontrados" class="indicator-list"><li>Aún no se ha realizado ningún análisis.</li></ul>
-        </div>
+        <div class="result-grid">
+          <section class="content-block result-evidence">
+            <div class="block-heading"><div><p class="eyebrow eyebrow-dark">EVIDENCIAS</p><h3>Indicadores encontrados</h3></div></div>
+            <ul id="indicadoresEncontrados" class="indicator-list"><li>Aún no se ha realizado ningún análisis.</li></ul>
+          </section>
 
-        <div class="two-column-blocks result-details">
-          <article class="content-block">
-            <div class="block-heading"><div><p class="eyebrow eyebrow-dark">SEÑAL COMPLEMENTARIA</p><h3>Modelo de aprendizaje automático</h3></div></div>
-            <p id="probabilidadML" class="ml-result">No disponible hasta completar el análisis.</p>
-            <p id="notaML" class="block-note">El modelo complementa las comprobaciones de seguridad.</p>
-          </article>
-          <article class="content-block">
-            <div class="block-heading"><div><p class="eyebrow eyebrow-dark">SIGUIENTE ACCIÓN</p><h3>Recomendaciones</h3></div></div>
-            <p id="recomendacionesAnalisis" class="recommendation-copy">Realiza el análisis para conocer las recomendaciones.</p>
-          </article>
+          <div class="result-side">
+            <article class="content-block result-ml">
+              <div class="block-heading"><div><p class="eyebrow eyebrow-dark">SEÑAL COMPLEMENTARIA</p><h3>Modelo de aprendizaje automático</h3></div></div>
+              <p id="probabilidadML" class="ml-result">No disponible hasta completar el análisis.</p>
+              <p id="notaML" class="block-note">El modelo complementa las comprobaciones de seguridad.</p>
+            </article>
+            <article class="content-block result-recommendations">
+              <div class="block-heading"><div><p class="eyebrow eyebrow-dark">SIGUIENTE ACCIÓN</p><h3>Recomendaciones</h3></div></div>
+              <p id="recomendacionesAnalisis" class="recommendation-copy">Realiza el análisis para conocer las recomendaciones.</p>
+            </article>
+          </div>
         </div>
-
-        <div class="content-block channels-block">
-          <div class="block-heading"><div><p class="eyebrow eyebrow-dark">VERIFICACIÓN INSTITUCIONAL</p><h3>Canales configurados</h3></div></div>
-          <ul id="listaCanales" class="data-list"><li>Se mostrarán después del análisis.</li></ul>
-          <p class="block-note">Confirma cualquier comunicación escribiendo el portal institucional directamente en el navegador.</p>
-        </div>
-
-        <details class="audit-details">
-          <summary>Auditoría de los cinco correos de práctica</summary>
-          <p>Ejecuta una revisión adicional de los mensajes de ejemplo incluidos en el proyecto.</p>
-          <button id="btnAuditoria" class="btn btn-secondary" type="button" onclick="ejecutarAuditoriaPractica()">Ejecutar auditoría</button>
-          <p id="estadoAuditoria" class="inline-status" role="status" aria-live="polite"></p>
-          <div id="resultadosAuditoria" class="audit-results"></div>
-        </details>
 
       </details>
 
@@ -241,6 +230,39 @@
       </div>
     </section>
   </main>
+
+  <aside class="aside-pasos" aria-label="Cómo guardar un correo de Gmail en PDF">
+    <h2>Guardar un correo en PDF</h2>
+    <p>Tres pasos sencillos para preparar el mensaje.</p>
+    <ol class="aside-pasos__lista">
+      <li class="aside-paso" data-paso-aside="1">
+        <span class="aside-paso__num">1</span>
+        <div class="aside-paso__txt">
+          <strong>Abra el correo</strong>
+          <span>Entre a Gmail y seleccione el mensaje que desea revisar.</span>
+        </div>
+        <button type="button" class="aside-paso__btn" data-leer="1">Escuchar</button>
+      </li>
+      <li class="aside-paso" data-paso-aside="2">
+        <span class="aside-paso__num">2</span>
+        <div class="aside-paso__txt">
+          <strong>Elija Imprimir</strong>
+          <span>Use el icono de impresora o el menú de opciones de Gmail.</span>
+        </div>
+        <button type="button" class="aside-paso__btn" data-leer="2">Escuchar</button>
+      </li>
+      <li class="aside-paso" data-paso-aside="3">
+        <span class="aside-paso__num">3</span>
+        <div class="aside-paso__txt">
+          <strong>Guarde como PDF</strong>
+          <span>Seleccione «Guardar como PDF» y después cargue el archivo aquí.</span>
+        </div>
+        <button type="button" class="aside-paso__btn" data-leer="3">Escuchar</button>
+      </li>
+    </ol>
+    <p class="aside-pasos__aviso">No abra enlaces ni adjuntos del correo sospechoso. Vigía solo revisa su contenido.</p>
+  </aside>
+</div>
 
   <footer class="site-footer">
     <div class="footer-grid">
@@ -288,6 +310,8 @@
   <script src="/accesibilidad/control_zoom.js"></script>
   <script src="/accesibilidad/lector_voz.js"></script>
   <script src="/accesibilidad/avatar_asistente.js"></script>
+  <script src="/assets/js/demo_visual.js"></script>
   <script src="/accesibilidad/cultura_consciente.js"></script>
+  <script src="/assets/js/cultura_consciente_layout.js"></script>
 </body>
 </html>

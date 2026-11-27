@@ -1,0 +1,16 @@
+{
+  "avatar_model": {
+    "path": "mod_avatar_accesibilidad/models/panteraups.glb",
+    "size_bytes": 740620,
+    "sha256": "a8c412de042fe70e302b6c208a266a68990f42365bf2616f00a7be26d05da74a",
+    "gltf_version": 2,
+    "animation_clips": [
+      "mixamo.com"
+    ]
+  },
+  "iess_logo": {
+    "path": "mod_web_flujo/img/logo-iess.png",
+    "size_bytes": 26890,
+    "sha256": "8672ab26a0e8ac4fb1eda81b4cd5cf38b98fca1d232a1810f8046bea6236a23a"
+  }
+}

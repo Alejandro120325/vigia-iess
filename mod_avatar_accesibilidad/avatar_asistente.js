@@ -2,12 +2,15 @@
 (function () {
   'use strict';
 
-  var MODEL_URL = '/accesibilidad/models/panteraups.glb';
+  var MODEL_URL = '/accesibilidad/models/panteraups.glb?v=20261127-pantera-zoom14-fov30';
   var MODEL_VIEWER_URL = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js';
+  var CAMERA_ORBIT = '0deg 75deg 14%';
+  var CAMERA_FIELD_OF_VIEW = '30deg';
   var viewerPromise = null;
   var host, widget, stage, stageStatus, captions, captionsToggle, voiceState;
   var pauseButton, findings, questionInput, questionAnswer, mouth;
   var viewer = null;
+  var modelFramed = false;
   var resizeObserver = null;
   var illustration = null;
   var launcherLabel = null;
@@ -87,6 +90,26 @@
     captions.textContent = String(text || 'Estoy aquí para ayudarte a utilizar Vigía IESS.');
   }
 
+  function applyCloseCamera() {
+    if (!viewer) return;
+    viewer.setAttribute('camera-target', 'auto auto auto');
+    viewer.setAttribute('camera-orbit', CAMERA_ORBIT);
+    viewer.setAttribute('field-of-view', CAMERA_FIELD_OF_VIEW);
+    if (typeof viewer.jumpCameraToGoal === 'function') viewer.jumpCameraToGoal();
+  }
+
+  function updateViewerFraming() {
+    if (!viewer) return;
+    viewer.setAttribute('camera-target', 'auto auto auto');
+    if (typeof viewer.updateFraming === 'function') {
+      Promise.resolve(viewer.updateFraming()).then(function () {
+        applyCloseCamera();
+      }).catch(function () { applyCloseCamera(); });
+    } else {
+      applyCloseCamera();
+    }
+  }
+
 
   function setExpanded(value) {
     expanded = !!value;
@@ -115,7 +138,10 @@
     // Solo cambiamos la interacción; la cámara y el estado de la animación se conservan.
     if (viewer) viewer.style.pointerEvents = expanded ? 'auto' : 'none';
 
-    window.requestAnimationFrame(clampWidgetToViewport);
+    window.requestAnimationFrame(function () {
+      updateViewerFraming();
+      clampWidgetToViewport();
+    });
   }
 
 
@@ -497,8 +523,8 @@
         return;
       }
 
-      // Se usa el GLB original del usuario, conservando la escala Armature 0.01.
-      // No se vuelve a escalar el rig: el encuadre de la cámara controla el tamaño visible.
+      // Se conserva el GLB con su armadura y animación. El tamaño visible se ajusta
+      // con camera-orbit y field-of-view, sin deformar ni reescalar los huesos.
       viewer = document.createElement('model-viewer');
       viewer.className = 'vg-assistant__model';
       viewer.setAttribute('src', MODEL_URL);
@@ -514,10 +540,10 @@
       viewer.setAttribute('disable-tap', '');
       viewer.setAttribute('interaction-prompt', 'none');
       viewer.setAttribute('camera-target', 'auto auto auto');
-      viewer.setAttribute('field-of-view', 'auto');
-      // Encuadre más cercano para que la mascota ocupe el escenario sin recortar el cuerpo.
+      // Encuadre cercano para que la mascota ocupe el escenario sin recortar el cuerpo.
       // El mismo encuadre se conserva al minimizar y expandir: no se recrea el visor.
-      viewer.setAttribute('camera-orbit', '0deg 75deg 88%');
+      viewer.setAttribute('camera-orbit', CAMERA_ORBIT);
+      viewer.setAttribute('field-of-view', CAMERA_FIELD_OF_VIEW);
       viewer.setAttribute('interpolation-decay', '180');
       viewer.setAttribute('rotation-per-second', '10deg');
       viewer.setAttribute('auto-rotate-delay', '0');
@@ -536,22 +562,39 @@
       });
 
       viewer.addEventListener('load', function () {
-        stageStatus.textContent = 'Pantera 3D cargada · Mixamo';
-        illustration.hidden = true;
-        // updateFraming se ejecuta una sola vez tras cargar. No se recalcula cada vez
-        // que el usuario abre o minimiza el panel, por lo que la cámara no se reinicia.
+        // Se conserva la escala útil del GLB distribuido (Armature 0.5).
+        // No se modifica el rig ni los canales Mixamo; solo se acerca la cámara.
+        var dimensions = typeof viewer.getDimensions === 'function' ? viewer.getDimensions() : null;
+        var maxDimension = dimensions
+          ? Math.max(dimensions.x || 0, dimensions.y || 0, dimensions.z || 0)
+          : 0;
+
+        if (dimensions && maxDimension > 0 && maxDimension < 0.4) {
+          stageStatus.textContent = 'El modelo se cargó, pero su escala sigue siendo demasiado pequeña.';
+          illustration.hidden = false;
+          console.error('Vigía: dimensiones inesperadas del modelo GLB:', dimensions);
+          return;
+        }
+
+        stageStatus.textContent = 'Ajustando cámara de Pantera 3D…';
+
+        var finishFraming = function () {
+          viewer.setAttribute('camera-target', 'auto auto auto');
+          viewer.setAttribute('camera-orbit', CAMERA_ORBIT);
+          viewer.setAttribute('field-of-view', CAMERA_FIELD_OF_VIEW);
+          viewer.setAttribute('interpolation-decay', '120');
+          if (typeof viewer.jumpCameraToGoal === 'function') viewer.jumpCameraToGoal();
+          if (typeof viewer.play === 'function') viewer.play();
+          modelFramed = true;
+          illustration.hidden = true;
+          stageStatus.textContent = 'Pantera 3D cargada · Animación Mixamo';
+        };
+
+        // El visor calcula el centro del modelo y después aplica un encuadre más cercano.
         if (typeof viewer.updateFraming === 'function') {
-          Promise.resolve(viewer.updateFraming()).then(function () {
-            viewer.setAttribute('camera-target', 'auto auto auto');
-            viewer.setAttribute('camera-orbit', '0deg 75deg 88%');
-      viewer.setAttribute('interpolation-decay', '180');
-            if (typeof viewer.jumpCameraToGoal === 'function') viewer.jumpCameraToGoal();
-            if (typeof viewer.play === 'function') viewer.play();
-          }).catch(function () {
-            if (typeof viewer.play === 'function') viewer.play();
-          });
-        } else if (typeof viewer.play === 'function') {
-          viewer.play();
+          Promise.resolve(viewer.updateFraming()).then(finishFraming).catch(finishFraming);
+        } else {
+          finishFraming();
         }
       });
 
@@ -564,14 +607,20 @@
       });
 
       viewer.addEventListener('model-visibility', function (event) {
-        if (event.detail && event.detail.visible === true) {
-          stageStatus.textContent = 'Pantera 3D visible · Animación Mixamo';
+        // Este evento solo informa que el visor está dentro del viewport;
+        // no se usa como prueba de que el modelo se haya dibujado correctamente.
+        if (modelFramed && event.detail && event.detail.visible === true) {
+          stageStatus.textContent = 'Pantera 3D cargada · Animación Mixamo';
         }
       });
 
       stage.appendChild(viewer);
-      // No agregamos un ResizeObserver externo: model-viewer administra su propio
-      // redimensionamiento. Recalcular el encuadre al abrir/minimizar causaba saltos.
+      if (window.ResizeObserver) {
+        resizeObserver = new ResizeObserver(function () {
+          if (viewer && modelFramed) updateViewerFraming();
+        });
+        resizeObserver.observe(stage);
+      }
     });
   }
 
