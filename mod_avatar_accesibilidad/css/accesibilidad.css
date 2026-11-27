@@ -385,7 +385,7 @@ html.alto-contraste .vg-voz .vg-btn:hover:not(:disabled) {
 
 
 /* Escenario del asistente 3D */
-.vg-avatar-live { max-width: 46rem; margin: 1.25rem auto; text-align: center; }
+.vg-avatar-live { display: none; max-width: 46rem; margin: 1.25rem auto; text-align: center; }
 .vg-avatar-live__scene { width: min(100%, 520px); height: 360px; margin: 0 auto; border-radius: 1rem; background: radial-gradient(circle at 50% 38%, #e8f0f8, #c8d7e8); overflow: hidden; }
 .vg-avatar-live__scene canvas { width: 100%; height: 100%; display: block; }
 #vg-avatar-estado { font-weight: 700; color: #0b2e59; }
