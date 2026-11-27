@@ -176,7 +176,11 @@
     boton.textContent = 'Analizando…';
     const lista = document.getElementById('listaComprobaciones');
     lista.textContent = '';
-    agregarElemento(lista, 'Integridad del correo', 'Leyendo el contenido y verificando la firma HMAC.');
+    agregarElemento(lista, 'Integridad del correo', 'El servidor comprobó la firma HMAC antes de analizar el mensaje.');
+    agregarElemento(lista, 'Reglas I1–I11', 'El motor revisará las señales determinísticas del correo.');
+    agregarElemento(lista, 'Clasificador ML', 'El modelo ONNX aportará una señal complementaria si está disponible.');
+    if (window.VigiaAvatar3D) window.VigiaAvatar3D.estado('analizando');
+    document.dispatchEvent(new CustomEvent('vigia:analisis-paso', { detail: { estado: 'analizando' } }));
     actualizarProgreso(0, 'Preparando la revisión segura…');
 
     try {
@@ -200,6 +204,7 @@
       agregarElemento(lista, 'Auditoría de integridad', respuesta.resultado.integridad_paso1_verificada
         ? 'El correo recibido conserva la firma de integridad válida.'
         : 'No se confirmó una firma de integridad.');
+      if (window.VigiaAvatar3D) window.VigiaAvatar3D.estado(respuesta.resultado.es_phishing ? 'alerta' : 'acierto');
 
       await animarProgreso(72, 96, 550, 'Preparando el resultado y las recomendaciones…');
       mostrarResultado(respuesta.resultado);
