@@ -9,6 +9,7 @@
   var speaking = false;
   var paused = false;
   var currentUtterance = null;
+  var completionCallback = null;
 
   function emit(name, detail) {
     document.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
@@ -51,7 +52,12 @@
     paused = false;
     queue = [];
     currentUtterance = null;
+    var callback = completionCallback;
+    completionCallback = null;
     emit('vigia:voz-fin');
+    if (typeof callback === 'function') {
+      try { callback(); } catch (_) { /* No interrumpir el lector por un callback externo. */ }
+    }
   }
 
   function speakNext(runToken) {
@@ -89,18 +95,26 @@
     paused = false;
     queue = [];
     currentUtterance = null;
+    completionCallback = null;
     if (wasSpeaking && !silent) emit('vigia:voz-fin');
   }
 
-  function speak(text) {
+  function speak(text, callback) {
     if (!supported) {
       emit('vigia:voz-no-disponible', { mensaje: 'Este navegador no admite lectura de voz.' });
       emit('vigia:voz-fin');
       return;
     }
     stop(true);
+    completionCallback = typeof callback === 'function' ? callback : null;
     queue = splitText(text);
-    if (!queue.length) { emit('vigia:voz-fin'); return; }
+    if (!queue.length) {
+      var emptyCallback = completionCallback;
+      completionCallback = null;
+      emit('vigia:voz-fin');
+      if (typeof emptyCallback === 'function') { try { emptyCallback(); } catch (_) {} }
+      return;
+    }
     token += 1;
     index = 0;
     speaking = true;
@@ -123,6 +137,7 @@
 
   window.VigiaVoz = {
     hablar: speak,
+    hablarConCallback: function (text, callback) { speak(text, callback); },
     pausar: pause,
     reanudar: resume,
     detener: function () { stop(false); },

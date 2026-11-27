@@ -1,0 +1,178 @@
+/* Aula educativa independiente; no altera los estilos globales de Vigía. */
+.layout-principal[hidden], .step-nav[hidden] { display:none !important; }
+.aula-launch-card {
+  display:flex; align-items:center; gap:16px; margin:0 0 16px; padding:15px 18px;
+  border:1px solid #d7e1e9; border-left:4px solid #c49a48; border-radius:12px;
+  background:linear-gradient(110deg,#fff 0%,#f1f6f9 100%); box-shadow:0 5px 16px rgba(21,59,99,.045);
+}
+.aula-launch-card__mark { display:grid; place-items:center; flex:0 0 44px; width:44px; height:44px; border-radius:13px; color:#fff; background:#153b63; font-size:1.35rem; }
+.aula-launch-card__copy { min-width:0; flex:1; }
+.aula-launch-card__eyebrow { margin:0 0 3px; color:#94703a; font-size:.64rem; font-weight:800; letter-spacing:.12em; }
+.aula-launch-card h3 { margin:0 0 3px; color:#153b63; font-size:1rem; }
+.aula-launch-card__copy p:last-child { margin:0; color:#617487; font-size:.78rem; line-height:1.5; }
+.aula-launch-card__button { flex:0 0 auto; }
+.aula-page { width:min(1240px,calc(100% - 32px)); margin:24px auto 34px; padding:clamp(18px,2.5vw,30px); border:1px solid #d7e1e9; border-radius:16px; background:#fff; color:#24384b; box-shadow:0 12px 32px rgba(21,59,99,.07); }
+.aula-page[hidden] { display:none !important; }
+.aula-page__header { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:18px; }
+.aula-page__header h2 { margin:0 0 5px; color:#153b63; font-size:clamp(1.35rem,2.3vw,1.8rem); line-height:1.2; }
+.aula-page__header p:last-child { margin:0; color:#64778a; font-size:.88rem; line-height:1.5; }
+.aula-progress { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; margin:18px 0 20px; }
+.aula-progress span { height:7px; border-radius:99px; background:#e2e9ee; transition:background .2s ease; }
+.aula-progress span.is-active,.aula-progress span.is-complete { background:#1f6b9f; }
+.aula-layout { display:grid; grid-template-columns:minmax(0,1.08fr) minmax(310px,.92fr); gap:16px; align-items:stretch; }
+.aula-visual,.aula-explanation { min-width:0; padding:clamp(16px,2vw,22px); border:1px solid #dbe4eb; border-radius:13px; background:#f7f9fb; }
+.aula-visual__heading { display:flex; align-items:center; gap:11px; margin-bottom:15px; }
+.aula-visual__icon { display:grid; place-items:center; width:42px; height:42px; flex:0 0 42px; border-radius:12px; color:#fff; background:#1b5688; font-size:1.25rem; }
+.aula-visual__heading strong,.aula-visual__heading small { display:block; }
+.aula-visual__heading strong { color:#153b63; font-size:.95rem; }
+.aula-visual__heading small { margin-top:3px; color:#718295; font-size:.72rem; }
+.aula-email { padding:17px; border:1px solid #cbd8e3; border-radius:11px; background:#fff; color:#334b60; }
+.aula-email[hidden],.aula-callout[hidden],.aula-deepfake[hidden],.aula-channels[hidden] { display:none !important; }
+.aula-email__row { margin:0; padding:9px 10px; border:2px solid transparent; border-radius:8px; font-size:.84rem; line-height:1.5; overflow-wrap:anywhere; transition:background .2s,border-color .2s; }
+.aula-email__row + .aula-email__row { margin-top:5px; }
+.aula-email__row strong { color:#153b63; }
+.aula-email__body { margin:12px 0; padding:9px 10px; color:#43596e; font-size:.85rem; line-height:1.65; }
+.aula-email__fake-button { display:inline-flex; flex-direction:column; gap:4px; padding:10px 13px; border:2px solid #71879b; border-radius:8px; color:#334b60; background:#edf2f6; font-size:.82rem; font-weight:800; text-decoration:line-through; }
+.aula-email__fake-button small { font-size:.67rem; font-weight:600; text-decoration:none; }
+.aula-email__footnote { margin:13px 0 0; padding-top:10px; border-top:1px solid #e4eaf0; color:#718295; font-size:.7rem; line-height:1.45; }
+.aula-email[data-foco="urgencia"] [data-aula-foco="asunto"],
+.aula-email[data-foco="remitente"] [data-aula-foco="remitente"],
+.aula-email[data-foco="remitente"] [data-aula-foco="enlace"] { border-color:#d59a32; background:#fff5df; color:#753d12; }
+.aula-email[data-foco="riesgo"] [data-aula-foco="enlace"] { border-color:#c84b4b; background:#fff0ef; color:#852c2c; text-decoration:line-through; }
+.aula-callout { display:flex; align-items:flex-start; gap:12px; margin-top:12px; padding:14px; border:1px solid #edcfca; border-left:4px solid #c84b4b; border-radius:10px; color:#762a2a; background:#fff1ef; }
+.aula-callout__symbol { display:grid; place-items:center; width:30px; height:30px; flex:0 0 30px; border-radius:50%; color:#fff; background:#bd4141; font-weight:900; }
+.aula-callout strong { display:block; margin:1px 0 4px; font-size:.86rem; }
+.aula-callout p { margin:0; font-size:.79rem; line-height:1.55; }
+.aula-deepfake { padding:16px; border:1px solid #d7e1e9; border-radius:11px; background:#fff; }
+.aula-deepfake__screen { min-height:150px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; border-radius:9px; color:#eaf1f7; background:radial-gradient(circle at 50% 40%,#345775,#122d49 72%); font-size:.7rem; font-weight:800; letter-spacing:.12em; }
+.aula-deepfake__play { display:grid; place-items:center; width:48px; height:48px; border:1px solid rgba(255,255,255,.55); border-radius:50%; color:#fff; background:rgba(255,255,255,.13); font-size:1.1rem; }
+.aula-deepfake__copy { margin-top:12px; color:#153b63; }
+.aula-deepfake__copy strong { font-size:.88rem; line-height:1.5; }
+.aula-deepfake__copy p { margin:5px 0 0; color:#63788b; font-size:.78rem; line-height:1.55; }
+.aula-deepfake__tip { margin-top:12px; padding:11px 12px; border-left:4px solid #c49a48; border-radius:7px; color:#5a4829; background:#fff5df; font-size:.77rem; line-height:1.55; }
+.aula-channels { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.aula-channel { display:flex; align-items:center; gap:10px; min-width:0; padding:11px; border:1px solid #d5e0e9; border-radius:10px; color:#153b63; background:#fff; text-decoration:none; transition:border-color .15s,transform .15s; }
+.aula-channel:hover { border-color:#84a7c1; transform:translateY(-1px); }
+.aula-channel__icon { display:grid; place-items:center; width:34px; height:34px; flex:0 0 34px; border-radius:10px; color:#fff; background:#1e5c8c; font-size:1rem; }
+.aula-channel strong,.aula-channel small { display:block; overflow-wrap:anywhere; }
+.aula-channel strong { font-size:.75rem; line-height:1.35; }
+.aula-channel small { margin-top:3px; color:#63788b; font-size:.67rem; line-height:1.4; }
+.aula-channels__note { grid-column:1/-1; margin:2px 0 0; padding:9px 11px; border-radius:8px; color:#596e81; background:#edf2f6; font-size:.69rem; line-height:1.5; }
+.aula-sources { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:8px 16px; }
+.aula-sources a { color:#1c6599; font-size:.7rem; font-weight:700; }
+.aula-explanation { display:flex; flex-direction:column; background:#fff; }
+.aula-explanation__top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+.aula-step-label { color:#9a7331; font-size:.66rem; font-weight:900; letter-spacing:.12em; }
+.aula-badge { display:inline-flex; padding:5px 9px; border-radius:99px; color:#244c6f; background:#eaf1f6; font-size:.68rem; font-weight:800; }
+.aula-explanation h3 { margin:18px 0 10px; color:#153b63; font-size:clamp(1.2rem,2vw,1.55rem); line-height:1.3; }
+.aula-narration { margin:0; color:#43596d; font-size:.91rem; line-height:1.75; }
+.aula-takeaway { display:flex; align-items:flex-start; gap:10px; margin-top:auto; padding:13px; border:1px solid #cfe4d7; border-radius:10px; color:#1f593c; background:#eff8f2; }
+.aula-takeaway > span { display:grid; place-items:center; width:27px; height:27px; flex:0 0 27px; border-radius:50%; color:#fff; background:#248454; font-weight:900; }
+.aula-takeaway strong { display:block; margin:1px 0 3px; font-size:.8rem; }
+.aula-takeaway p { margin:0; font-size:.76rem; line-height:1.55; }
+.aula-voice-card { display:flex; align-items:center; gap:10px; margin-top:12px; padding:11px 12px; border:1px solid #dae4ec; border-radius:10px; background:#f7f9fb; }
+.aula-voice-card__icon { display:grid; place-items:center; width:34px; height:34px; flex:0 0 34px; border-radius:10px; color:#fff; background:#153b63; }
+.aula-voice-card strong,.aula-voice-card small { display:block; }
+.aula-voice-card strong { color:#153b63; font-size:.76rem; }
+.aula-voice-card small { margin-top:3px; color:#718295; font-size:.68rem; line-height:1.45; }
+.aula-controls { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:16px; padding:13px 14px; border:1px solid #dce5ec; border-radius:11px; background:#f6f8fa; }
+.aula-controls__status { display:flex; align-items:center; gap:8px; color:#516579; font-size:.75rem; font-weight:700; }
+.aula-live-dot { width:9px; height:9px; border-radius:50%; background:#2c8a5d; box-shadow:0 0 0 4px rgba(44,138,93,.12); }
+.aula-controls__buttons { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; }
+.aula-controls .btn { min-height:37px; padding:8px 11px; font-size:.75rem; }
+.aula-controls .btn:disabled { opacity:.48; cursor:not-allowed; }
+.aula-disclaimer { margin:12px 0 0; color:#77889a; font-size:.7rem; line-height:1.5; }
+.aula-page.aula--proyector .aula-layout { grid-template-columns:1fr; }
+.aula-page.aula--proyector .aula-visual,.aula-page.aula--proyector .aula-explanation { padding:25px; }
+.aula-page.aula--proyector .aula-narration { font-size:1.12rem; line-height:1.8; }
+.aula-page.aula--proyector .aula-email__row,.aula-page.aula--proyector .aula-email__body { font-size:1rem; }
+html.tema-oscuro .aula-launch-card,html.tema-oscuro .aula-page { color:#e5edf4; background:#182838; border-color:#40566a; }
+html.tema-oscuro .aula-launch-card h3,html.tema-oscuro .aula-page__header h2,html.tema-oscuro .aula-visual__heading strong,html.tema-oscuro .aula-explanation h3,html.tema-oscuro .aula-voice-card strong { color:#e5edf4; }
+html.tema-oscuro .aula-launch-card__copy p:last-child,html.tema-oscuro .aula-page__header p:last-child,html.tema-oscuro .aula-narration { color:#c0cfdb; }
+html.tema-oscuro .aula-visual,html.tema-oscuro .aula-explanation,html.tema-oscuro .aula-controls,html.tema-oscuro .aula-voice-card { color:#e5edf4; background:#203244; border-color:#40566a; }
+html.tema-oscuro .aula-email,html.tema-oscuro .aula-deepfake,html.tema-oscuro .aula-channel { color:#e5edf4; background:#172635; border-color:#40566a; }
+html.tema-oscuro .aula-email__row strong,html.tema-oscuro .aula-deepfake__copy { color:#e5edf4; }
+html.tema-oscuro .aula-email__body,html.tema-oscuro .aula-deepfake__copy p,html.tema-oscuro .aula-visual__heading small,html.tema-oscuro .aula-channel small { color:#c0cfdb; }
+html.tema-oscuro .aula-email__footnote,html.tema-oscuro .aula-disclaimer { color:#aebdca; border-color:#40566a; }
+html.tema-oscuro .aula-email[data-foco="urgencia"] [data-aula-foco="asunto"],html.tema-oscuro .aula-email[data-foco="remitente"] [data-aula-foco="remitente"],html.tema-oscuro .aula-email[data-foco="remitente"] [data-aula-foco="enlace"] { color:#f4dca9; background:#453a27; border-color:#b88a42; }
+html.tema-oscuro .aula-callout { color:#ffd8d3; background:#402a2c; border-color:#815052; }
+html.tema-oscuro .aula-takeaway { color:#d7f1e1; background:#203b32; border-color:#3d715a; }
+html.tema-oscuro .aula-takeaway p,html.tema-oscuro .aula-controls__status { color:#c0cfdb; }
+html.tema-oscuro .aula-channels__note { color:#c0cfdb; background:#293d50; }
+html.tema-oscuro .aula-badge { color:#d7e7f4; background:#2c4358; }
+@media(max-width:900px) {
+  .aula-layout { grid-template-columns:1fr; }
+  .aula-controls { align-items:stretch; flex-direction:column; }
+  .aula-controls__buttons { justify-content:flex-start; }
+}
+@media(max-width:620px) {
+  .aula-launch-card { align-items:flex-start; flex-wrap:wrap; padding:13px; }
+  .aula-launch-card__button { width:100%; }
+  .aula-page { width:calc(100% - 20px); margin:14px auto 24px; padding:14px; }
+  .aula-page__header { align-items:flex-start; flex-direction:column; }
+  .aula-page__header > .btn { width:100%; }
+  .aula-visual,.aula-explanation { padding:13px; }
+  .aula-channels { grid-template-columns:1fr; }
+  .aula-channels__note,.aula-sources { grid-column:auto; }
+  .aula-controls__buttons { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .aula-controls__buttons .btn { width:100%; }
+  .aula-controls__buttons #btnAulaIniciar,.aula-controls__buttons #btnAulaSiguiente { grid-column:1/-1; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .aula-progress span,.aula-email__row,.aula-channel { transition:none; }
+  .aula-channel:hover { transform:none; }
+}
+
+/* v2: subtítulos legibles, un solo reproductor y video educativo local. */
+.aula-explanation { min-height:100%; }
+.aula-narration { font-size:1rem; line-height:1.8; }
+.aula-takeaway p { font-size:.9rem; line-height:1.65; }
+.aula-scene-status { display:flex; align-items:center; gap:9px; margin-top:auto; padding:12px 13px; border:1px solid #dbe5ec; border-radius:10px; color:#516579; background:#f5f8fa; font-size:.82rem; line-height:1.5; }
+.aula-deepfake { display:flex; flex-direction:column; gap:12px; }
+.aula-media-label { display:flex; align-items:center; gap:8px; color:#173f63; font-size:.72rem; font-weight:850; letter-spacing:.07em; }
+.aula-media-label__dot { width:9px; height:9px; flex:0 0 9px; border-radius:50%; background:#c49a48; box-shadow:0 0 0 4px rgba(196,154,72,.14); }
+.aula-video { display:block; width:100%; max-height:430px; aspect-ratio:16/9; object-fit:contain; border:1px solid #cbd8e3; border-radius:12px; background:#101820; }
+.aula-video-actions { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; color:#60758a; font-size:.76rem; line-height:1.5; }
+.aula-small-button { padding:7px 11px; border:1px solid #cbd9e4; border-radius:8px; color:#173f63; background:#f7f9fb; font:inherit; font-weight:750; cursor:pointer; }
+.aula-small-button:hover { border-color:#1e6598; background:#edf4f9; }
+.aula-subtitle-dock { position:sticky; bottom:10px; z-index:20; margin-top:17px; padding:14px; border:1px solid #cbd8e4; border-radius:14px; color:#fff; background:linear-gradient(135deg,#102f50,#173f63); box-shadow:0 12px 28px rgba(10,35,58,.22); }
+.aula-subtitle-dock__top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.aula-subtitle-dock__top > div { display:flex; flex-direction:column; gap:3px; }
+.aula-subtitle-dock__eyebrow { color:#e7c878; font-size:.64rem; font-weight:850; letter-spacing:.14em; }
+.aula-subtitle-dock__top strong { color:#fff; font-size:.9rem; }
+.aula-cc-toggle { min-height:36px; padding:7px 12px; border:1px solid rgba(255,255,255,.38); border-radius:9px; color:#fff; background:rgba(255,255,255,.1); font:inherit; font-size:.78rem; font-weight:800; cursor:pointer; }
+.aula-cc-toggle[aria-pressed="false"] { color:#e1e9f0; background:rgba(0,0,0,.2); }
+.aula-subtitle-text { min-height:3.2em; margin:11px 0 13px; padding:12px 14px; border-radius:10px; color:#102b46; background:#fff; font-size:1.08rem; font-weight:650; line-height:1.55; letter-spacing:.005em; }
+.aula-subtitle-dock.is-captions-off .aula-subtitle-text { display:none; }
+.aula-player { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.aula-player__status { display:flex; align-items:center; gap:8px; min-width:170px; color:#e3edf5; font-size:.76rem; font-weight:750; }
+.aula-player__controls { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:7px; }
+.aula-player__controls .btn { min-height:38px; padding:8px 11px; font-size:.76rem; }
+.aula-player__controls .btn:disabled { opacity:.48; cursor:not-allowed; }
+.aula-player__controls .btn-secondary { color:#153b63; background:#fff; border-color:#d1dfeb; }
+.aula-player__controls .btn-primary { color:#fff; background:#2772a9; border-color:#2772a9; }
+.aula-disclaimer { font-size:.75rem; line-height:1.6; }
+
+html.tema-oscuro .aula-scene-status { color:#d5e1ea; background:#203244; border-color:#40566a; }
+html.tema-oscuro .aula-media-label { color:#e4edf5; }
+html.tema-oscuro .aula-video { border-color:#40566a; }
+html.tema-oscuro .aula-video-actions { color:#c0cfdb; }
+html.tema-oscuro .aula-small-button { color:#e5edf4; background:#293d50; border-color:#52697e; }
+html.tema-oscuro .aula-subtitle-dock { border-color:#40566a; background:linear-gradient(135deg,#0d2238,#172f48); }
+html.tema-oscuro .aula-subtitle-text { color:#f5f8fb; background:#29435b; }
+html.tema-oscuro .aula-player__controls .btn-secondary { color:#e6eff6; background:#263d52; border-color:#526a80; }
+html.tema-oscuro .aula-player__controls .btn-primary { color:#fff; background:#287bb4; border-color:#287bb4; }
+
+@media(max-width:900px) {
+  .aula-player { align-items:stretch; flex-direction:column; }
+  .aula-player__controls { justify-content:flex-start; }
+}
+@media(max-width:620px) {
+  .aula-subtitle-dock { bottom:5px; padding:11px; }
+  .aula-subtitle-text { font-size:1rem; min-height:4em; }
+  .aula-player__controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; }
+  .aula-player__controls .btn { width:100%; }
+  .aula-player__controls #btnAulaIniciar,
+  .aula-player__controls #btnAulaProyector { grid-column:1/-1; }
+  .aula-video-actions { align-items:flex-start; }
+}

@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/assets/css/estilos_intitucionales.css">
   <link rel="stylesheet" href="/assets/css/demo_visual.css">
   <link rel="stylesheet" href="/accesibilidad/css/accesibilidad.css">
+  <link rel="stylesheet" href="/assets/css/aula_seguridad.css?v=20261127-aula2-media">
 </head>
 <body>
   <header class="site-header" id="inicio">
@@ -74,7 +75,19 @@
       <div class="privacy-pill"><span aria-hidden="true">●</span> Procesamiento local</div>
     </div>
 
-    <section id="ventana1" class="paso window-card ventana-activa" aria-labelledby="tituloPaso1">
+    <section class="aula-launch-card" aria-labelledby="aulaLaunchTitle">
+  <div class="aula-launch-card__mark" aria-hidden="true">✦</div>
+  <div class="aula-launch-card__copy">
+    <p class="aula-launch-card__eyebrow">APRENDE CON VIGÍA</p>
+    <h3 id="aulaLaunchTitle">Aula de Seguridad Digital</h3>
+    <p>Aprende a reconocer correos falsos, engaños telefónicos y videos o voces manipuladas mediante una simulación narrada.</p>
+  </div>
+  <button id="btnAbrirAulaSeguridad" class="btn btn-primary aula-launch-card__button" type="button">
+    Entrar al aula <span aria-hidden="true">→</span>
+  </button>
+</section>
+
+<section id="ventana1" class="paso window-card ventana-activa" aria-labelledby="tituloPaso1">
       <div class="window-heading">
         <div class="window-index">01</div>
         <div><p class="eyebrow eyebrow-dark">PRIMER PASO</p><h2 id="tituloPaso1">Carga el correo que quieres revisar</h2><p>Selecciona un archivo exportado o pega el contenido del mensaje.</p></div>
@@ -264,7 +277,130 @@
   </aside>
 </div>
 
-  <footer class="site-footer">
+  <section id="aulaSeguridad" class="aula-page" hidden aria-labelledby="aulaTitulo">
+  <div class="aula-page__header">
+    <div>
+      <p class="eyebrow eyebrow-dark">VIGÍA IESS · APRENDIZAJE PREVENTIVO</p>
+      <h2 id="aulaTitulo">Aula de Seguridad Digital</h2>
+      <p>Una experiencia guiada para reconocer engaños y aprender a actuar con calma.</p>
+    </div>
+    <button id="btnSalirAula" class="btn btn-secondary" type="button">← Volver al análisis</button>
+  </div>
+
+  <div class="aula-progress" aria-label="Progreso de la simulación">
+    <span class="is-active" data-aula-progreso="0"></span>
+    <span data-aula-progreso="1"></span>
+    <span data-aula-progreso="2"></span>
+    <span data-aula-progreso="3"></span>
+    <span data-aula-progreso="4"></span>
+  </div>
+
+  <div class="aula-layout">
+    <section class="aula-visual" aria-label="Ejemplo visual de una amenaza digital">
+      <div class="aula-visual__heading">
+        <span class="aula-visual__icon" aria-hidden="true">✉</span>
+        <div>
+          <strong id="aulaVisualTitle">Correo de ejemplo</strong>
+          <small id="aulaVisualSubtitle">Simulación educativa · No es un mensaje real</small>
+        </div>
+      </div>
+
+      <div id="aulaEmail" class="aula-email" data-foco="urgencia">
+        <p class="aula-email__row" data-aula-foco="remitente"><strong>De:</strong> Soporte urgente &lt;notificacion-seguridad@iess-alerta-falsa.com&gt;</p>
+        <p class="aula-email__row" data-aula-foco="asunto"><strong>Asunto:</strong> <span>¡URGENTE! Su cuenta será suspendida hoy</span></p>
+        <p class="aula-email__body">Estimado usuario: detectamos un problema con su cuenta. Ingrese su clave ahora para evitar el bloqueo.</p>
+        <div class="aula-email__fake-button" data-aula-foco="enlace">Verificar mi clave aquí <small>Enlace falso de ejemplo · No es interactivo</small></div>
+        <p class="aula-email__footnote">Este correo, remitente y dominio son ficticios. Se muestran únicamente para aprender.</p>
+      </div>
+
+      <div id="aulaRiesgo" class="aula-callout aula-callout--risk" hidden>
+        <span class="aula-callout__symbol" aria-hidden="true">!</span>
+        <div><strong>Consecuencias posibles</strong><p>Robo de contraseñas, suplantación de identidad, acceso no autorizado a cuentas y posibles pérdidas económicas.</p></div>
+      </div>
+
+      <div id="aulaDeepfake" class="aula-deepfake" hidden>
+        <div class="aula-media-label"><span class="aula-media-label__dot"></span> EJEMPLO EDUCATIVO · SUPLANTACIÓN FAMILIAR</div>
+        <video id="aulaVideoEjemplo" class="aula-video" controls playsinline preload="metadata" muted poster="/assets/aula/suplantacion-whatsapp-poster.jpg">
+          <source src="/assets/aula/suplantacion-whatsapp.mp4" type="video/mp4">
+          <track kind="captions" src="/assets/aula/suplantacion-whatsapp.vtt" srclang="es" label="Español" default>
+          Tu navegador no puede reproducir este video. Puedes continuar leyendo la explicación de Vigía.
+        </video>
+        <div class="aula-video-actions">
+          <span id="aulaVideoNota">Ejemplo de un mensaje fraudulento por WhatsApp. No es un deepfake de rostro o voz.</span>
+          <button id="btnAulaVideoSonido" class="aula-small-button" type="button" aria-pressed="false">Activar sonido</button>
+        </div>
+        <div class="aula-deepfake__copy">
+          <strong>¿Qué debes observar?</strong>
+          <p>El mensaje finge ser de un familiar, inventa una emergencia y pide datos sensibles del IESS. Los deepfakes también pueden imitar rostros y voces; verifica siempre por otro canal.</p>
+        </div>
+        <div class="aula-deepfake__tip">No envíes claves ni dinero por presión. Llama al número que ya tienes guardado y confirma la situación con calma.</div>
+      </div>
+
+      <div id="aulaCanales" class="aula-channels" hidden>
+        <a class="aula-channel" href="https://www.iess.gob.ec/" target="_blank" rel="noopener noreferrer">
+          <span class="aula-channel__icon" aria-hidden="true">↗</span><span><strong>Portal oficial del IESS</strong><small>www.iess.gob.ec</small></span>
+        </a>
+        <a class="aula-channel" href="mailto:atencionalusuario@iess.gob.ec?subject=Correo%20sospechoso">
+          <span class="aula-channel__icon" aria-hidden="true">✉</span><span><strong>Reportar correo sospechoso</strong><small>atencionalusuario@iess.gob.ec</small></span>
+        </a>
+        <a class="aula-channel" href="tel:+59323945666">
+          <span class="aula-channel__icon" aria-hidden="true">☎</span><span><strong>Atención al ciudadano</strong><small>(02) 3945 666 · Lun–vie, 08:00–17:00</small></span>
+        </a>
+        <a class="aula-channel" href="https://denuncias.iess.gob.ec/" target="_blank" rel="noopener noreferrer">
+          <span class="aula-channel__icon" aria-hidden="true">◎</span><span><strong>Chatbot de quejas y denuncias</strong><small>denuncias.iess.gob.ec</small></span>
+        </a>
+        <a class="aula-channel" href="https://wa.me/593962532338" target="_blank" rel="noopener noreferrer">
+          <span class="aula-channel__icon" aria-hidden="true">◉</span><span><strong>WhatsApp de quejas y denuncias</strong><small>096 253 2338</small></span>
+        </a>
+        <p class="aula-channels__note">El correo de atención al usuario es el canal indicado para reenviar correos sospechosos. El chatbot web y WhatsApp reciben quejas y denuncias; el teléfono es de atención al ciudadano. No uses datos de contacto incluidos en mensajes sospechosos.</p>
+        <div class="aula-sources">
+          <a href="https://www.iess.gob.ec/evita-estafas-y-fraudes/" target="_blank" rel="noopener noreferrer">Recomendaciones antifraude del IESS</a>
+          <a href="https://www.iess.gob.ec/contactos/" target="_blank" rel="noopener noreferrer">Contactos oficiales</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="aula-explanation" aria-labelledby="aulaEscenaTitulo">
+      <div class="aula-explanation__top">
+        <span id="aulaPaso" class="aula-step-label">ESCENA 1 DE 5</span>
+        <span id="aulaBadge" class="aula-badge">Señal 1 · Te apuran para que no pienses</span>
+      </div>
+      <h3 id="aulaEscenaTitulo">Llega un correo que parece urgente</h3>
+      <p id="aulaNarracion" class="aula-narration">Imagina que recibes un correo que dice que tu cuenta será bloqueada hoy mismo. Ese apuro busca asustarte para que actúes sin pensar.</p>
+      <div class="aula-takeaway"><span aria-hidden="true">✓</span><div><strong>Qué debes recordar</strong><p id="aulaRecordatorio">Una institución no debe presionarte para que entregues tus datos de inmediato. Detente y verifica con calma.</p></div></div>
+      <div class="aula-scene-status" role="status" aria-live="polite">
+        <span class="aula-live-dot" aria-hidden="true"></span>
+        <span id="aulaEstado">Preparado para comenzar</span>
+      </div>
+    </section>
+  </div>
+
+  <div class="aula-subtitle-dock" aria-label="Subtítulos y controles de narración">
+    <div class="aula-subtitle-dock__top">
+      <div><span class="aula-subtitle-dock__eyebrow">VIGÍA TE ACOMPAÑA</span><strong>Subtítulos de la narración</strong></div>
+      <button id="btnAulaSubtitulos" class="aula-cc-toggle" type="button" aria-pressed="true">CC · Subtítulos activados</button>
+    </div>
+    <p id="aulaSubtitulosTexto" class="aula-subtitle-text" role="status" aria-live="polite">Activa el recorrido para escuchar y leer la explicación de Vigía.</p>
+    <div class="aula-player">
+      <div class="aula-player__status"><span class="aula-live-dot" aria-hidden="true"></span><span id="aulaEstadoVoz">Listo para comenzar</span></div>
+      <div class="aula-player__controls">
+        <button id="btnAulaIniciar" class="btn btn-primary" type="button">▶ Iniciar recorrido</button>
+        <button id="btnAulaAnterior" class="btn btn-secondary" type="button" disabled>← Anterior</button>
+        <button id="btnAulaPausar" class="btn btn-secondary" type="button" disabled>Ⅱ Pausar</button>
+        <button id="btnAulaRepetir" class="btn btn-secondary" type="button">↻ Repetir escena</button>
+        <button id="btnAulaSiguiente" class="btn btn-secondary" type="button">Siguiente →</button>
+        <button id="btnAulaDetener" class="btn btn-secondary" type="button" disabled>■ Detener</button>
+        <button id="btnAulaProyector" class="btn btn-secondary" type="button" aria-pressed="false">Vista proyector</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="aula-disclaimer">Esta es una simulación educativa. El correo y la conversación de WhatsApp son ejemplos ficticios. El video ilustra suplantación familiar por mensajería; no demuestra un deepfake facial o de voz. No se abren enlaces ni se envían datos.</p>
+</section>
+
+
+
+<footer class="site-footer">
     <div class="footer-grid">
       <section class="footer-section">
         <p class="footer-label">EQUIPO DEL PROYECTO</p>
@@ -310,8 +446,10 @@
   <script src="/accesibilidad/control_zoom.js"></script>
   <script src="/accesibilidad/lector_voz.js"></script>
   <script src="/accesibilidad/avatar_asistente.js"></script>
+<script src="/assets/js/aula_avatar_animaciones.js?v=20261127-aula2-media"></script>
   <script src="/assets/js/demo_visual.js"></script>
   <script src="/accesibilidad/cultura_consciente.js"></script>
   <script src="/assets/js/cultura_consciente_layout.js"></script>
+  <script src="/assets/js/aula_seguridad.js?v=20261127-aula2-media"></script>
 </body>
 </html>
