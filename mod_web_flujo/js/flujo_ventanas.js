@@ -198,6 +198,33 @@
       const estadoSolicitud = await solicitudAnalisis;
       if (!estadoSolicitud.correcto) throw estadoSolicitud.error;
       const respuesta = estadoSolicitud.respuesta;
+      const datosResultado = respuesta.resultado || {};
+      const indiciosEncontrados = datosResultado.indicios || [];
+      lista.textContent = '';
+      agregarElemento(lista, 'Integridad del correo', datosResultado.integridad_paso1_verificada
+        ? 'Firma HMAC verificada correctamente.'
+        : 'No se confirmó la firma HMAC del mensaje.');
+      agregarElemento(lista, 'Reglas determinísticas I1–I11',
+        indiciosEncontrados.length + ' indicio(s) encontrados por el motor.');
+      if (indiciosEncontrados.length) {
+        indiciosEncontrados.forEach(function (item) {
+          agregarElemento(lista, (item.codigo || '') + ' · ' + (item.nombre || 'Indicio'),
+            (item.explicacion || '') +
+            (item.evidencia ? ' Evidencia: ' + item.evidencia : '') +
+            (item.consejo ? ' Recomendación: ' + item.consejo : ''));
+        });
+      } else {
+        agregarElemento(lista, 'Sin coincidencias I1–I11',
+          'No se detectaron indicios determinísticos; esto no garantiza legitimidad.');
+      }
+      const modeloResultado = datosResultado.modelo || {};
+      agregarElemento(lista, 'Modelo ONNX',
+        modeloResultado.modelo_ml_disponible
+          ? 'Modelo disponible; su salida es complementaria.'
+          : 'Modelo no disponible; el análisis conserva el resultado por reglas.');
+      document.dispatchEvent(new CustomEvent('vigia:analisis-resultados', {
+        detail: { total: indiciosEncontrados.length, es_phishing: datosResultado.es_phishing === true }
+      }));
       agregarElemento(lista, 'Reglas I1–I11', respuesta.resultado.total_indicios + ' indicio(s) detectado(s).');
 
       const motor = respuesta.resultado.modelo || {};
