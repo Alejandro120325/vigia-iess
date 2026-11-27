@@ -365,7 +365,7 @@
     figBox.innerHTML = SVG;
     boca = figBox.querySelector('.vg-av__boca');
     pico = figBox.querySelector('.vg-av__pico');
-    nota3D = el('span', 'vg-av__3d-nota', 'Búho 3D: modelo provisional');
+    nota3D = el('span', 'vg-av__3d-nota', 'Búho 3D: archivo provisional pendiente de carga');
     figBox.appendChild(nota3D);
 
     var info = el('div', 'vg-av__info');
