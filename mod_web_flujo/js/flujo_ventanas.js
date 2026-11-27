@@ -225,16 +225,7 @@
       document.dispatchEvent(new CustomEvent('vigia:analisis-resultados', {
         detail: { total: indiciosEncontrados.length, es_phishing: datosResultado.es_phishing === true }
       }));
-      agregarElemento(lista, 'Reglas I1–I11', respuesta.resultado.total_indicios + ' indicio(s) detectado(s).');
 
-      const motor = respuesta.resultado.modelo || {};
-      const estadoModelo = motor.modelo_ml_disponible
-        ? 'Clasificador ONNX disponible.'
-        : 'Clasificador ONNX no disponible; el dictamen por reglas sigue activo.';
-      agregarElemento(lista, 'Modelo de aprendizaje automático', estadoModelo);
-      agregarElemento(lista, 'Auditoría de integridad', respuesta.resultado.integridad_paso1_verificada
-        ? 'El correo recibido conserva la firma de integridad válida.'
-        : 'No se confirmó una firma de integridad.');
       if (window.VigiaAvatar3D) window.VigiaAvatar3D.estado(respuesta.resultado.es_phishing ? 'alerta' : 'acierto');
 
       await animarProgreso(72, 96, 550, 'Preparando el resultado y las recomendaciones…');
