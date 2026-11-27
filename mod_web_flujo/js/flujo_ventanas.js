@@ -79,7 +79,7 @@
       };
       document.addEventListener('vigia:voz-fin', finalizar);
       window.VigiaVoz.hablar(texto);
-      window.setTimeout(finalizar, Math.max(5000, texto.length * 100));
+      window.setTimeout(finalizar, Math.max(6000, texto.length * 140));
     });
   }
 
@@ -152,13 +152,13 @@
 
     if (window.VigiaAvatar && typeof window.VigiaAvatar.explicar === 'function') {
       if (typeof window.VigiaAvatar.explicarAnalisis === 'function') {
-        window.VigiaAvatar.explicarAnalisis(resultado);
-      } else {
-        window.VigiaAvatar.explicar({
-          es_phishing: esPhishing,
-          indicios: resultado.indicios || []
-        });
-      }
+      window.VigiaAvatar.explicarAnalisis(resultado);
+    } else {
+      window.VigiaAvatar.explicar({
+        es_phishing: esPhishing,
+        indicios: resultado.indicios || []
+      });
+    }
     }
     document.dispatchEvent(new CustomEvent('vigia:resultado', {
       detail: { es_phishing: esPhishing }
