@@ -416,6 +416,7 @@
     rep.appendChild(copiar); rep.appendChild(msgCopia);
 
     [cab, veredicto, sem, claseBox, sub, rep].forEach(function (n) { tarjeta.appendChild(n); });
+    aplicarModelo3D('/accesibilidad/models/panteraups.glb');
     host.appendChild(tarjeta);
   }
 
