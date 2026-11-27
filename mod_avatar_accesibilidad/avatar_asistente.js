@@ -219,6 +219,19 @@
       ? 'El motor detectó señales de posible phishing. No pulse enlaces ni abra adjuntos y compruebe el mensaje por canales oficiales.'
       : 'No se detectaron indicios determinísticos de phishing. Mantenga la precaución y verifique cualquier solicitud sensible por un canal independiente.';
     decir(resumen);
+    ultimo.indicios.forEach(function (item, index) {
+      var detalle = 'Indicio ' + (index + 1) + ': ' + item.nombre + '. ' +
+        (item.explicacion || '') +
+        (item.evidencia ? ' Evidencia: ' + item.evidencia : '') +
+        (item.consejo ? ' Recomendación: ' + item.consejo : '');
+      decir(detalle);
+    });
+    if (!ultimo.indicios.length) {
+      decir('No se encontraron coincidencias en las reglas determinísticas I uno a I once. Esto no garantiza que el mensaje sea legítimo.');
+    }
+    if (typeof datos.probabilidad_ml === 'number') {
+      decir('La estimación complementaria del clasificador es ' + datos.probabilidad_ml + ' por ciento. No sustituye las reglas.');
+    }
   }
 
   function saludar() {
