@@ -151,10 +151,14 @@
     mostrarCanales(resultado.canales_oficiales);
 
     if (window.VigiaAvatar && typeof window.VigiaAvatar.explicar === 'function') {
-      window.VigiaAvatar.explicar({
-        es_phishing: esPhishing,
-        indicios: resultado.indicios || []
-      });
+      if (typeof window.VigiaAvatar.explicarAnalisis === 'function') {
+        window.VigiaAvatar.explicarAnalisis(resultado);
+      } else {
+        window.VigiaAvatar.explicar({
+          es_phishing: esPhishing,
+          indicios: resultado.indicios || []
+        });
+      }
     }
     document.dispatchEvent(new CustomEvent('vigia:resultado', {
       detail: { es_phishing: esPhishing }
