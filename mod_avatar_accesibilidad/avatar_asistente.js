@@ -66,7 +66,7 @@
 
   /* ---------- Soporte de modelo 3D ---------- */
   function asegurarModelViewer(cb) {
-    if (customElements && customElements.get('model-viewer')) { cb(true); return; }
+    if (window.customElements && customElements.get('model-viewer')) { cb(true); return; }
     if (document.getElementById('vg-mv-script')) {
       customElements.whenDefined('model-viewer').then(function () { cb(true); }, function () { cb(false); });
       return;
