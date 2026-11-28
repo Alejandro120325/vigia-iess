@@ -93,44 +93,156 @@
     list.appendChild(li);
   }
 
-  function renderResult(result) {
-    var panel = document.getElementById('veredictoPanel');
-    var list = document.getElementById('indicadoresEncontrados');
-    var phishing = result.es_phishing === true;
-    var indicators = Array.isArray(result.indicios) ? result.indicios : [];
+  // Patrones visuales tomados del detector móvil (email_highlight_screen.dart).
+  // Se muestran como orientación y se contrastan con las reglas I1-I11 del backend.
+  var EMAIL_HIGHLIGHT_RULES = [
+    { code: 'I1', label: 'Urgencia artificial', description: 'Puede presionar para que actúes sin verificar.', pattern: '\\b(?:hoy mismo|último aviso|urgente|inmediatamente|en las próximas 24 horas|plazo de hoy)\\b' },
+    { code: 'I5', label: 'Instalación o descarga', description: 'Pide instalar software o descargar una supuesta herramienta.', pattern: '\\b(?:instala|descarga e instala|aplicación de seguridad|programa de verificación)\\b' },
+    { code: 'I9', label: 'Datos personales', description: 'Menciona cédula, identidad o datos personales que no debes entregar sin verificar.', pattern: '\\b(?:cédula|documento de identidad|datos personales|número de identidad|foto de tu documento)\\b' },
+    { code: 'I10', label: 'Pago o transferencia', description: 'Menciona pagos, depósitos, transferencias o criptomonedas.', pattern: '\\b(?:pago|pagar|depósito|transferencia|criptomoneda|bitcoin|costo de trámite)\\b' },
+    { code: 'I6', label: 'Premio o beneficio inesperado', description: 'Ofrece premios, bonos o reembolsos que podrían ser un gancho.', pattern: '\\b(?:premio|ganaste|bono|reembolso|devolución inesperada|beneficio exclusivo)\\b' },
+    { code: 'I3', label: 'Claves y credenciales', description: 'Menciona claves, contraseñas, PIN, tokens o códigos de acceso.', pattern: '\\b(?:clave|contraseña|password|pin|token|tarjeta bancaria|código de acceso)\\b' },
+    { code: 'I8', label: 'Amenaza o bloqueo', description: 'Menciona suspensión, bloqueo, multas o pérdida de beneficios.', pattern: '\\b(?:suspensión|suspendido|bloqueo|bloquear|multa|embargo|pérdida de beneficios|ser cancelado)\\b' },
+    { code: 'I11', label: 'Código QR', description: 'Solicita escanear un QR cuyo destino debe verificarse antes de abrirlo.', pattern: '\\b(?:código qr|escanea el qr|escanea este código)\\b' }
+  ];
 
-    panel.classList.toggle('veredicto--alerta', phishing);
-    panel.classList.toggle('veredicto--limpio', !phishing);
-    document.getElementById('resultadoAnalisis').textContent = phishing
-      ? 'Posible phishing detectado'
-      : 'No se detectaron señales de phishing';
-    document.getElementById('resumenAnalisis').textContent = phishing
-      ? 'Vigía encontró ' + indicators.length + ' señal(es). La mascota te explicará cómo actuar.'
-      : 'No hubo coincidencias en las reglas. Esto no garantiza que el mensaje sea legítimo.';
-    document.getElementById('totalIndicios').textContent = indicators.length +
-      (indicators.length === 1 ? ' indicio detectado' : ' indicios detectados');
+  var EMAIL_HIGHLIGHT_EXPLANATIONS = {
+    I2: 'El destino del enlace no está en la lista de dominios permitidos. No lo abras; verifica el portal escribiendo su dirección manualmente.',
+    I4: 'El enlace puede estar acortado o mostrar un texto distinto de su destino real. No lo abras desde el mensaje.',
+    I7: 'El remitente no coincide con un dominio reconocido o el campo Reply-To es distinto. Comprueba la dirección completa.'
+  };
 
-    list.textContent = '';
-    if (indicators.length) {
-      indicators.forEach(function (item) {
-        addListItem(list, (item.codigo || '') + ' · ' + (item.nombre || 'Indicio'),
-          (item.explicacion || '') +
-          (item.evidencia ? ' Evidencia: ' + item.evidencia : '') +
-          (item.consejo ? ' Recomendación: ' + item.consejo : ''));
-      });
-    } else {
-      addListItem(list, 'Sin coincidencias en las reglas I1–I11',
-        'Esto no demuestra que el mensaje sea auténtico. Compruebe el remitente y cualquier solicitud por un canal oficial.');
+  function buildEmailHighlightSource(email) {
+    email = email || {};
+    var parts = [];
+    if (email.remitente) parts.push('Remitente: ' + email.remitente);
+    if (email.asunto) parts.push('Asunto: ' + email.asunto);
+    var body = email.cuerpo_neutralizado || email.cuerpo || '';
+    if (body) parts.push('Contenido del mensaje:\n' + body);
+    return parts.join('\n\n') || 'No se pudo recuperar el texto del correo.';
+  }
+
+  function collectEmailHighlightMatches(source, email, result) {
+    var candidates = [];
+    var indicators = Array.isArray(result && result.indicios) ? result.indicios : [];
+    var detectedCodes = new Set(indicators.map(function (item) { return String(item.codigo || '').toUpperCase(); }));
+
+    function add(start, end, code, label, description, detected) {
+      if (start < 0 || end <= start || end > source.length) return;
+      candidates.push({ start: start, end: end, code: code || '', label: label || 'Fragmento para revisar',
+        description: description || 'Revisa este fragmento dentro del contexto del mensaje.', detected: !!detected });
     }
 
-    document.getElementById('probabilidadML').textContent =
-      typeof result.probabilidad_ml === 'number'
-        ? result.probabilidad_ml.toFixed(1) + ' % de estimación complementaria del clasificador'
-        : 'No disponible: el clasificador ONNX no produjo una estimación.';
-    document.getElementById('notaML').textContent = result.probabilidad_ml_nota ||
-      'La estimación ML es complementaria y no sustituye el resultado de las reglas determinísticas.';
-    document.getElementById('recomendacionesAnalisis').textContent = result.guion_avatar ||
-      'No abra enlaces ni adjuntos. No comparta claves ni códigos. Verifique cualquier trámite por canales oficiales.';
+    EMAIL_HIGHLIGHT_RULES.forEach(function (rule) {
+      var regex = new RegExp(rule.pattern, 'gi');
+      var match;
+      while ((match = regex.exec(source)) !== null) {
+        add(match.index, match.index + match[0].length, rule.code, rule.label,
+          rule.description, detectedCodes.has(rule.code));
+        if (match[0].length === 0) regex.lastIndex++;
+      }
+    });
+
+    // Cuando el motor ya entregó evidencia textual exacta, también la marcamos.
+    indicators.forEach(function (item) {
+      var evidence = String(item.evidencia || '').trim();
+      if (!evidence || evidence.length > 220) return;
+      var index = source.toLocaleLowerCase().indexOf(evidence.toLocaleLowerCase());
+      if (index >= 0) {
+        add(index, index + evidence.length, String(item.codigo || '').toUpperCase(),
+          item.nombre || 'Evidencia del análisis', item.explicacion || item.evidencia, true);
+      }
+    });
+
+    // Resalta los destinos no permitidos/acortados si el texto neutralizado los contiene.
+    (Array.isArray(email && email.enlaces) ? email.enlaces : []).forEach(function (link) {
+      var suspiciousDomain = link && (link.es_dominio_permitido === false || link.es_acortador === true);
+      var disguised = !!(email && email.enlace_disfrazado);
+      if (!suspiciousDomain && !disguised) return;
+      var values = [link.url_neutralizada, link.texto_visible].filter(Boolean);
+      values.forEach(function (value) {
+        value = String(value);
+        var index = source.toLocaleLowerCase().indexOf(value.toLocaleLowerCase());
+        if (index >= 0) {
+          var code = link.es_acortador || disguised ? 'I4' : 'I2';
+          add(index, index + value.length, code,
+            code === 'I4' ? 'Enlace acortado u oculto' : 'Dominio de enlace no verificado',
+            EMAIL_HIGHLIGHT_EXPLANATIONS[code], detectedCodes.has(code));
+        }
+      });
+    });
+
+    // Si el remitente o un adjunto es la evidencia y no aparece en el cuerpo,
+    // se conserva como explicación de metadatos en la lista de hallazgos.
+    var unique = new Map();
+    candidates.forEach(function (item) {
+      var key = [item.start, item.end, item.code].join(':');
+      if (!unique.has(key)) unique.set(key, item);
+    });
+    return Array.from(unique.values()).sort(function (a, b) {
+      return a.start - b.start || (b.end - b.start) - (a.end - a.start);
+    });
+  }
+
+  function renderEmailHighlights(email, result) {
+    var preview = document.getElementById('correoMarcado');
+    var summary = document.getElementById('correoMarcadoResumen');
+    if (!preview || !summary) return;
+
+    var source = buildEmailHighlightSource(email);
+    var matches = collectEmailHighlightMatches(source, email || {}, result || {});
+    preview.textContent = '';
+
+    var cursor = 0;
+    var rendered = [];
+    matches.forEach(function (item) {
+      if (item.start < cursor) return;
+      if (item.start > cursor) preview.appendChild(document.createTextNode(source.slice(cursor, item.start)));
+      var mark = document.createElement('mark');
+      mark.className = 'email-highlight-mark ' + (item.detected ? 'is-detected' : 'is-pattern');
+      mark.textContent = source.slice(item.start, item.end);
+      mark.title = (item.code ? item.code + ' · ' : '') + item.label + '. ' + item.description;
+      preview.appendChild(mark);
+      cursor = item.end;
+      rendered.push(item);
+    });
+    if (cursor < source.length) preview.appendChild(document.createTextNode(source.slice(cursor)));
+
+    var confirmed = rendered.filter(function (item) { return item.detected; }).length;
+    var contextual = rendered.length - confirmed;
+    if (!rendered.length) {
+      summary.textContent = 'No se encontraron frases para resaltar. Revise igualmente el remitente, los enlaces y los archivos adjuntos.';
+    } else {
+      summary.textContent = rendered.length + ' partes marcadas. ' + confirmed + ' coinciden con señales del análisis' +
+        (contextual ? ' y ' + contextual + ' requieren revisar el contexto.' : '.');
+    }
+  }
+
+  function renderResult(result) {
+    var panel = document.getElementById('veredictoPanel');
+    var phishing = result.es_phishing === true;
+    var indicators = Array.isArray(result.indicios) ? result.indicios : [];
+    renderEmailHighlights(window.correoVigiaActual || {}, result);
+
+    if (panel) {
+      panel.classList.toggle('veredicto--alerta', phishing);
+      panel.classList.toggle('veredicto--limpio', !phishing);
+    }
+    var title = document.getElementById('resultadoAnalisis');
+    var summary = document.getElementById('resumenAnalisis');
+    var count = document.getElementById('totalIndicios');
+    var nextAction = document.getElementById('resultadoAcciones');
+    if (title) title.textContent = phishing
+      ? 'Posible phishing detectado'
+      : 'No se detectaron señales de phishing';
+    if (summary) summary.textContent = phishing
+      ? 'Vigía encontró ' + indicators.length + ' señales que debe revisar.'
+      : 'No hubo coincidencias en las reglas. Esto no garantiza que el mensaje sea legítimo.';
+    if (count) count.textContent = indicators.length +
+      (indicators.length === 1 ? ' indicio detectado' : ' indicios detectados');
+    if (nextAction) nextAction.textContent = phishing
+      ? 'No responda. No abra enlaces ni adjuntos. No comparta claves o códigos. Reporte el mensaje usando los canales oficiales de esta página.'
+      : 'No se encontraron señales conocidas. Aun así, verifique cualquier solicitud importante entrando directamente a www.iess.gob.ec.';
 
     if (window.VigiaAvatar && typeof window.VigiaAvatar.explicarAnalisis === 'function') {
       window.VigiaAvatar.explicarAnalisis(result);

@@ -533,3 +533,62 @@ html.tema-oscuro .vigia-profile-close { color:#edf4f8; background:#20384d; borde
   .indicator-list, .result-side { grid-template-columns:1fr; }
   .result-ml, .result-recommendations { min-height:0; }
 }
+
+
+/* Lectura guiada del correo: resaltados inspirados en el detector móvil Flutter. */
+.email-highlight-card { margin-top:14px; }
+.email-highlight-badge {
+  flex:0 0 auto; display:inline-flex; align-items:center; padding:6px 10px;
+  border:1px solid #d7e2ec; border-radius:999px; color:#244c70; background:#f5f8fb;
+  font-size:.7rem; font-weight:800; letter-spacing:.02em;
+}
+.email-highlight-intro { margin:0 0 12px; color:var(--texto-secundario,#53677b); font-size:.88rem; line-height:1.6; }
+.email-highlight-legend { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; margin:0 0 9px; font-size:.76rem; }
+.email-highlight-legend > span { display:inline-flex; align-items:center; }
+.email-highlight-mark {
+  display:inline; padding:1px 3px; border-radius:3px; font-weight:750;
+  -webkit-box-decoration-break:clone; box-decoration-break:clone;
+}
+.email-highlight-mark.is-detected {
+  color:#84232b; background:#ffe1e3; border-bottom:2px solid #ce4652;
+}
+.email-highlight-mark.is-pattern {
+  color:#754a08; background:#fff1c9; border-bottom:2px solid #d69b24;
+}
+.email-highlight-summary { margin:0 0 9px; color:var(--azul,#173d60); font-size:.8rem; font-weight:700; line-height:1.5; }
+.email-highlight-preview {
+  max-height:360px; min-height:135px; overflow:auto; padding:15px 16px;
+  border:1px solid var(--borde,#d7e1e9); border-radius:9px; background:#f7f9fb;
+  color:#293e52; font-size:.9rem; line-height:1.8; white-space:pre-wrap; overflow-wrap:anywhere;
+  font-family:inherit;
+}
+.email-highlight-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:12px 0 0; padding:0; list-style:none; }
+.email-highlight-list li { min-width:0; padding:11px 12px; border:1px solid var(--borde,#d7e1e9); border-radius:8px; background:#fff; overflow-wrap:anywhere; }
+.email-highlight-list li strong { display:block; margin-bottom:4px; color:var(--azul,#173d60); font-size:.8rem; line-height:1.45; }
+.email-highlight-list li p { margin:0; color:var(--texto-secundario,#53677b); font-size:.78rem; line-height:1.55; }
+.email-highlight-disclaimer { margin:11px 0 0; }
+html.tema-oscuro .email-highlight-preview { color:#e5edf4; background:#1d2d3d; border-color:#405367; }
+html.tema-oscuro .email-highlight-list li { background:#202f3e; border-color:#405367; }
+html.tema-oscuro .email-highlight-list li strong { color:#e2edf7; }
+html.tema-oscuro .email-highlight-list li p, html.tema-oscuro .email-highlight-intro { color:#c1d0de; }
+html.tema-oscuro .email-highlight-summary { color:#e2edf7; }
+@media (max-width:650px) {
+  .email-highlight-card { padding:14px; }
+  .email-highlight-list { grid-template-columns:1fr; }
+  .email-highlight-preview { max-height:300px; padding:12px; font-size:.84rem; }
+  .email-highlight-badge { font-size:.64rem; padding:5px 8px; }
+}
+
+
+/* Veredicto simplificado para lectura clara y acceso directo a canales del IESS. */
+.result-next-step,
+.result-channels-card { margin-top:14px; }
+.result-next-step { border-left:4px solid var(--dorado,#c49a48); }
+.result-next-step p { margin:0; color:var(--texto-secundario,#53677b); font-size:.9rem; line-height:1.6; }
+.result-channels-intro { margin:0 0 12px; color:var(--texto-secundario,#53677b); font-size:.86rem; line-height:1.55; }
+.result-channels { margin-top:0; }
+.result-channels .aula-channel { min-height:64px; }
+.result-channels .aula-channels__note { font-size:.75rem; }
+.result-channels .aula-sources { margin-top:2px; }
+html.tema-oscuro .result-next-step p,
+html.tema-oscuro .result-channels-intro { color:#c0cfdb; }

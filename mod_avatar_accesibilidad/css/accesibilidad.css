@@ -588,3 +588,86 @@ html.tema-oscuro #avatar-asistente .vg-assistant__launcher-label { color:#d6e4f3
   #avatar-asistente .vg-assistant.is-expanded .vg-assistant__model,
   #avatar-asistente .vg-assistant.is-expanded model-viewer.vg-assistant__model { min-height:290px; }
 }
+
+
+/* Controles de acercamiento del modelo 3D: esquina inferior izquierda. */
+#avatar-asistente .vg-assistant__zoom-controls {
+  position:absolute;
+  z-index:30;
+  left:10px;
+  bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  pointer-events:auto;
+}
+#avatar-asistente .vg-assistant__zoom-button {
+  display:grid;
+  place-items:center;
+  width:31px;
+  height:31px;
+  min-width:31px;
+  padding:0;
+  color:#153b63;
+  background:rgba(255,255,255,.96);
+  border:1px solid #d4dee8;
+  border-radius:50%;
+  box-shadow:0 2px 7px rgba(15,41,66,.16);
+  font:700 20px/1 Arial,Helvetica,sans-serif;
+  cursor:pointer;
+  pointer-events:auto;
+  touch-action:manipulation;
+}
+#avatar-asistente .vg-assistant__zoom-button:hover:not(:disabled) {
+  color:#fff;
+  background:#2469a6;
+  border-color:#2469a6;
+}
+#avatar-asistente .vg-assistant__zoom-button:disabled {
+  opacity:.42;
+  cursor:not-allowed;
+}
+html.tema-oscuro #avatar-asistente .vg-assistant__zoom-button {
+  color:#e7edf4;
+  background:rgba(32,50,70,.96);
+  border-color:#496176;
+}
+
+
+/* Ajustes de encuadre solicitados: mascota más baja, completa y sin anillos decorativos. */
+#avatar-asistente .vg-assistant__stage::before,
+#avatar-asistente .vg-assistant__stage::after {
+  display:none !important;
+  content:none !important;
+}
+#avatar-asistente model-viewer.vg-assistant__model {
+  transform:translateY(15px) scale(.92);
+  transform-origin:50% 50%;
+}
+#avatar-asistente .vg-assistant__zoom-controls {
+  touch-action:manipulation;
+}
+
+
+/* Ajuste final: avatar con tamaño natural mayor y colocado más abajo. */
+#avatar-asistente model-viewer.vg-assistant__model {
+  /* El escenario actúa como suelo visual: margen para que el zoom no recorte los pies. */
+  transform: translateY(50px) scale(1) !important;
+  transform-origin: 50% 50%;
+}
+
+
+/* Reparación de interacción del zoom: controles siempre por encima del visor. */
+#avatar-asistente .vg-assistant__zoom-controls,
+#avatar-asistente .vg-assistant__zoom-controls * {
+  pointer-events:auto !important;
+}
+#avatar-asistente .vg-assistant__zoom-controls {
+  isolation:isolate;
+  touch-action:manipulation;
+}
+#avatar-asistente .vg-assistant__zoom-button {
+  position:relative;
+  z-index:31;
+  -webkit-tap-highlight-color:transparent;
+}

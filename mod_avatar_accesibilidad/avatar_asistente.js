@@ -2,10 +2,18 @@
 (function () {
   'use strict';
 
-  var MODEL_URL = '/accesibilidad/models/panteraups.glb?v=20261127-pantera-zoom14-fov30';
+  var MODEL_URL = '/accesibilidad/models/panteraups.glb?v=20261128-pantera-zoom48-step8-min16-ground50';
   var MODEL_VIEWER_URL = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js';
-  var CAMERA_ORBIT = '0deg 75deg 14%';
+  // El tamaño visible predeterminado es el máximo permitido.
+  // El zoom se controla variando el radio de la órbita, no el FOV:
+  // así el cambio de tamaño es claramente perceptible en escritorio y móvil.
+  var CAMERA_ORBIT_THETA = '0deg 75deg ';
+  var CAMERA_DEFAULT_RADIUS = 48;
+  var CAMERA_MIN_RADIUS = 16;
+  var CAMERA_MAX_RADIUS = 96;
+  var CAMERA_ZOOM_STEP = 8;
   var CAMERA_FIELD_OF_VIEW = '30deg';
+  var currentCameraRadius = CAMERA_DEFAULT_RADIUS;
   var viewerPromise = null;
   var host, widget, stage, stageStatus, captions, captionsToggle, voiceState;
   var pauseButton, findings, questionInput, questionAnswer, mouth;
@@ -93,13 +101,56 @@
   function applyCloseCamera() {
     if (!viewer) return;
     viewer.setAttribute('camera-target', 'auto auto auto');
-    viewer.setAttribute('camera-orbit', CAMERA_ORBIT);
+    viewer.setAttribute('camera-orbit', getCameraOrbit());
     viewer.setAttribute('field-of-view', CAMERA_FIELD_OF_VIEW);
     if (typeof viewer.jumpCameraToGoal === 'function') viewer.jumpCameraToGoal();
   }
 
+  function getCameraOrbit() {
+    return CAMERA_ORBIT_THETA + currentCameraRadius + '%';
+  }
+
+  function applyCameraOrbit() {
+    if (!viewer) return;
+    var orbit = getCameraOrbit();
+    viewer.setAttribute('camera-orbit', orbit);
+    try { viewer.cameraOrbit = orbit; } catch (_) {}
+    if (typeof viewer.jumpCameraToGoal === 'function') viewer.jumpCameraToGoal();
+  }
+
+  function applyCameraZoom(direction) {
+    if (!viewer || !modelFramed) return;
+    // direction -1 acerca (radio menor); +1 aleja (radio mayor).
+    currentCameraRadius = Math.max(CAMERA_MIN_RADIUS, Math.min(CAMERA_MAX_RADIUS,
+      currentCameraRadius + (direction * CAMERA_ZOOM_STEP)));
+    applyCameraOrbit();
+    updateZoomButtons();
+  }
+
+  function resetCameraZoom() {
+    if (!viewer || !modelFramed) return;
+    currentCameraRadius = CAMERA_DEFAULT_RADIUS;
+    applyCameraOrbit();
+    updateZoomButtons();
+  }
+
+  function updateZoomButtons() {
+    if (!widget) return;
+    var zoomIn = widget.querySelector('[data-vigia-zoom="in"]');
+    var zoomOut = widget.querySelector('[data-vigia-zoom="out"]');
+    if (zoomIn) zoomIn.disabled = !modelFramed || currentCameraRadius <= CAMERA_MIN_RADIUS;
+    if (zoomOut) zoomOut.disabled = !modelFramed || currentCameraRadius >= CAMERA_MAX_RADIUS;
+  }
+
   function updateViewerFraming() {
     if (!viewer) return;
+    // Una vez encuadrado, abrir/minimizar solo reaplica la cámara actual:
+    // no recalcula el encuadre ni altera el zoom elegido por el usuario.
+    if (modelFramed) {
+      applyCloseCamera();
+      updateZoomButtons();
+      return;
+    }
     viewer.setAttribute('camera-target', 'auto auto auto');
     if (typeof viewer.updateFraming === 'function') {
       Promise.resolve(viewer.updateFraming()).then(function () {
@@ -111,9 +162,24 @@
   }
 
 
+  function dockWidgetBottomRight() {
+    if (!host) return;
+    var mobile = !!(window.matchMedia && window.matchMedia('(max-width: 600px)').matches);
+    // Al minimizar, el launcher vuelve siempre a su ancla inferior derecha.
+    // Se limpian las coordenadas absolutas que pudieran venir de un arrastre previo.
+    host.style.removeProperty('left');
+    host.style.removeProperty('top');
+    host.style.right = mobile ? '10px' : '18px';
+    host.style.bottom = mobile ? '10px' : '18px';
+    host.dataset.userMoved = 'false';
+    try { localStorage.removeItem('vigia_mascot_position'); } catch (_) {}
+  }
+
   function setExpanded(value) {
+    var wasExpanded = expanded;
     expanded = !!value;
     if (!widget) return;
+    if (wasExpanded && !expanded) dockWidgetBottomRight();
 
     widget.classList.toggle('is-expanded', expanded);
     widget.classList.toggle('is-collapsed', !expanded);
@@ -283,23 +349,17 @@
   }
 
   function restoreWidgetPosition() {
-    if (!host) return;
-    try {
-      var saved = JSON.parse(localStorage.getItem('vigia_mascot_position') || 'null');
-      if (saved && Number.isFinite(saved.left) && Number.isFinite(saved.top)) {
-        host.style.left = saved.left + 'px';
-        host.style.top = saved.top + 'px';
-        host.style.right = 'auto';
-        host.style.bottom = 'auto';
-        host.dataset.userMoved = 'true';
-        window.requestAnimationFrame(clampWidgetToViewport);
-      }
-    } catch (_) {}
+    // El estado inicial minimizado debe aparecer en la esquina inferior derecha,
+    // no en una coordenada antigua guardada cuando el panel estaba expandido.
+    dockWidgetBottomRight();
   }
 
   function bindMascotDrag() {
     if (!stage) return;
     stage.addEventListener('pointerdown', function (event) {
+      // Los botones de zoom no deben iniciar el arrastre del launcher:
+      // el pointer capture del escenario podía convertir su click en Abrir.
+      if (event.target && event.target.closest && event.target.closest('.vg-assistant__zoom-controls')) return;
       if (expanded || (event.pointerType === 'mouse' && event.button !== 0)) return;
       var rect = host.getBoundingClientRect();
       dragState = {
@@ -542,7 +602,7 @@
       viewer.setAttribute('camera-target', 'auto auto auto');
       // Encuadre cercano para que la mascota ocupe el escenario sin recortar el cuerpo.
       // El mismo encuadre se conserva al minimizar y expandir: no se recrea el visor.
-      viewer.setAttribute('camera-orbit', CAMERA_ORBIT);
+      viewer.setAttribute('camera-orbit', getCameraOrbit());
       viewer.setAttribute('field-of-view', CAMERA_FIELD_OF_VIEW);
       viewer.setAttribute('interpolation-decay', '180');
       viewer.setAttribute('rotation-per-second', '10deg');
@@ -580,12 +640,15 @@
 
         var finishFraming = function () {
           viewer.setAttribute('camera-target', 'auto auto auto');
-          viewer.setAttribute('camera-orbit', CAMERA_ORBIT);
+          currentCameraRadius = CAMERA_DEFAULT_RADIUS;
+          viewer.setAttribute('camera-orbit', getCameraOrbit());
           viewer.setAttribute('field-of-view', CAMERA_FIELD_OF_VIEW);
           viewer.setAttribute('interpolation-decay', '120');
           if (typeof viewer.jumpCameraToGoal === 'function') viewer.jumpCameraToGoal();
           if (typeof viewer.play === 'function') viewer.play();
           modelFramed = true;
+          applyCameraOrbit();
+          updateZoomButtons();
           illustration.hidden = true;
           stageStatus.textContent = 'Pantera 3D cargada · Animación Mixamo';
         };
@@ -650,6 +713,34 @@
     stage = el('div', 'vg-assistant__stage');
     stageStatus = el('span', 'vg-assistant__status', 'Cargando mascota 3D…');
     stage.appendChild(stageStatus);
+
+    // Controles compactos de zoom fijados abajo a la izquierda del escenario 3D.
+    var zoomControls = el('div', 'vg-assistant__zoom-controls');
+    zoomControls.setAttribute('role', 'group');
+    zoomControls.setAttribute('aria-label', 'Zoom del modelo 3D');
+    var zoomInButton = button('+', 'vg-assistant__zoom-button', function (event) {
+      event.stopPropagation();
+      applyCameraZoom(-1);
+    });
+    zoomInButton.setAttribute('data-vigia-zoom', 'in');
+    zoomInButton.setAttribute('aria-label', 'Acercar modelo 3D');
+    zoomInButton.title = 'Acercar modelo 3D';
+    var zoomOutButton = button('−', 'vg-assistant__zoom-button', function (event) {
+      event.stopPropagation();
+      applyCameraZoom(1);
+    });
+    zoomOutButton.setAttribute('data-vigia-zoom', 'out');
+    zoomOutButton.setAttribute('aria-label', 'Alejar modelo 3D');
+    zoomOutButton.title = 'Alejar modelo 3D';
+    zoomControls.appendChild(zoomInButton);
+    zoomControls.appendChild(zoomOutButton);
+    // Evita que pointerdown/pointerup alcancen el escenario o su lógica de drag.
+    ['pointerdown', 'pointerup', 'pointercancel', 'mousedown', 'touchstart'].forEach(function (eventName) {
+      zoomControls.addEventListener(eventName, function (event) { event.stopPropagation(); }, { passive: true });
+    });
+    stage.appendChild(zoomControls);
+    updateZoomButtons();
+
     illustration = el('div', 'vg-assistant__illustration');
     illustration.innerHTML = FALLBACK_SVG;
     illustration.hidden = true;
@@ -657,6 +748,11 @@
     launcherLabel = el('span', 'vg-assistant__launcher-label', 'Vigía');
     stage.appendChild(launcherLabel);
     stage.addEventListener('click', function (event) {
+      if (event.target && event.target.closest && event.target.closest('.vg-assistant__zoom-controls')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
       if (suppressStageClick) {
         event.preventDefault();
         event.stopPropagation();
